@@ -2,69 +2,97 @@
 	"battery_voltage": {
 		"category": "bms",
 		"name": "Battery Voltage",
-		"unit": " V"
+		"unit": " V",
+		"safe_max": 2,
+		"safe_min": 0
 	},
 	"battery_current": {
 		"category": "bms",
 		"name": "Output Current",
-		"unit": " A"
+		"unit": " A",
+		"safe_max": 100,
+		"safe_min": 0
 	},
 	"battery_temperature": {
 		"category": "bms",
 		"name": "Battery Temperature",
-		"unit": "&deg;C"
+		"unit": " &deg;C",
+		"safe_max": 100,
+		"safe_min": 0
 	},
 	"bms_fault": {
 		"category": "bms",
-		"name": "Isolation Fault Sensor"
+		"name": "Isolation Fault Sensor",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_time": {
 		"category": "gps",
-		"name": "GPS Timestamp"
+		"name": "GPS Timestamp",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_lat": {
 		"category": "gps",
 		"name": "Latitude",
-		"unit": "&deg;"
+		"unit": " &deg;",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_lon": {
 		"category": "gps",
 		"name": "Longitude",
-		"unit": "&deg;"
+		"unit": " &deg;",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_velocity_east": {
 		"category": "gps",
 		"name": "Eastward velocity (via GPS)",
-		"unit": " mph"
+		"unit": " mph",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_velocity_north": {
 		"category": "gps",
 		"name": "Northward velocity (via GPS)",
-		"unit": " mph"
+		"unit": " mph",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_velocity_up": {
 		"category": "gps",
 		"name": "Upward velocity (via GPS)",
-		"unit": " mph"
+		"unit": " mph",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_speed": {
 		"category": "gps",
 		"name": "Car speed (via GPS)",
-		"unit": " kn"
+		"unit": " km",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"solar_voltage": {
 		"category": "mppt",
 		"name": "Input voltage (from solar)",
-		"unit": " V"
+		"unit": " V",
+		"safe_max": 100,
+		"safe_min": 0
 	},
 	"solar_current": {
 		"category": "mppt",
 		"name": "Input current (from solar)",
-		"unit": " A"
+		"unit": " A",
+		"safe_max": 100,
+		"safe_min": 0
 	},
 	"motor_speed": {
 		"category": "motor",
 		"name": "Car speed (via motor controller)",
-		"unit": " mph"
+		"unit": " mph",
+		"safe_max": 100,
+		"safe_min": 0
 	}
 }

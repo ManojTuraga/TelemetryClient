@@ -8,6 +8,17 @@
         <h1 class="text-center">Realtime</h1>
     </div>
     <div class="container">
+        <div class="row">
+            <div class="form-row ml-2" style="display: none">
+                <label class="sr-only" for="add-chart-sel">Add a chart</label>
+                <select id="add-chart-sel" class="form-control" onchange="showChart(this.value)">
+                    <option value="def" disabled selected>Unhide Chart</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
     <div class="row">
 
         <!-- Top row for map
@@ -17,21 +28,26 @@
         -->
 
 
-        {% for datatype, datatype_dic in format.items() %}
-            <div class="col-12 col-lg-6 m-0 p-1" style="min-height: 500px;">
-                <div id="card-{{ datatype }}" class="card m-1" style="height: 100%; width: 100%">
-                        <div class="card-header">
-                            {{ datatype_dic['name'] }}:
-                            <span id="head-{{datatype}}">
+        {% for datatype, datatype_dic in format.items() if datatype not in no_chart['keys'] %}
+            <div id="container-{{ datatype }}" class="card-container col-12 col-lg-6 m-0 p-1">
+                <div id="card-{{ datatype }}" class="card m-1">
+                    <div class="card-header" data-toggle="collapse" data-target="#card-body-wrap-{{ datatype }}">
+                        <p style="float: left; margin: 0" class="btn-link text-reset" onclick="hideChart('{{ datatype }}')">Hide</p>
 
-                            </span>
-                            {{datatype_dic['unit'] }}
-                        </div>
+                        {{ datatype_dic['name'] }}:
+                        <span id="head-{{datatype}}">
 
+                        </span>
+                        {{datatype_dic['unit'] }}
 
+                        <p style="float: right; margin: 0" class="btn-link text-reset">Pin</p>
+                    </div>
+
+                    <div id="card-body-wrap-{{ datatype }}" class="h-100 collapse show" style="-webkit-transition: height 0.01s;-moz-transition: height 0.01s;-o-transition: height 0.01s;transition: height 0.01s;">
                         <div class="card-body p-0">
-                            <canvas id="canvas-{{ datatype }}" class="can" style="height: 100%; width: 100%"></canvas>
+                            <canvas id="canvas-{{ datatype }}" class="can btn-link" style="height: 600px;"></canvas>
                         </div>
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -39,6 +55,10 @@
     </div>
     </div>
 
+    <script>
+        let db_format = {{ format | tojson }};
+        let no_chart = {{ no_chart | tojson}};
+    </script>
     <script src="{{ url_for('static', filename='javascript/realtime.js') }}"></script>
 
     <!-- Map script has to come down here-->
