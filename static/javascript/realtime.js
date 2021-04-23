@@ -106,6 +106,7 @@ let charts = contexts.map(x => new Chart(x, {
 
 
 initialHide();
+checkForData();
 setInterval(checkForData, 2000);
 
 
@@ -136,25 +137,15 @@ function checkForData() {
 
 
 function initialHide(){
-    const http = new XMLHttpRequest();
-    const url = "/realtime/data";
-    http.open("GET", url);
-    http.send();
-
-    http.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            let data = JSON.parse(http.responseText);
-            for(let i = 0; i < charts.length; i++) {
-                let chart = charts[i];
-                let parsed_id = chart.canvas.id.split("-")[1];
-                let hide_id = window.localStorage.getItem('opt-' + parsed_id);
-                if (hide_id == 0){
-                    hideChart(parsed_id);
-                }
-            }
+    for(let i = 0; i < charts.length; i++) {
+        let parsed_id = charts[i].canvas.id.split("-")[1];
+        let hide_id = window.localStorage.getItem('opt-' + parsed_id);
+        if (hide_id == 0){
+            hideChart(parsed_id);
         }
-    };
+    }
 }
+
 
 
 /*
