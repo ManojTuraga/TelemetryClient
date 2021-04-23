@@ -23,9 +23,8 @@ function hideChart(id) {
     opt.value = id;
     opt.innerHTML = db_format[id]['name'];
     sel.appendChild(opt);
-
     sel.parentNode.style.display = 'block';
-
+    window.localStorage.setItem('opt-' + id, 0);
     document.getElementById('container-' + id).style.display = 'none';
 }
 
@@ -38,6 +37,7 @@ Show the chart.
 
 function showChart(id) {
     let removed_opt = document.getElementById('opt-' + id);
+    window.localStorage.setItem('opt-' + id, 1);
     let sel = removed_opt.parentNode;
     sel.removeChild(removed_opt);
 
@@ -51,7 +51,6 @@ function showChart(id) {
 
     $('#card-body-wrap-' + id).collapse('show')
 }
-
 
 // Canvases hold contexts. Charts are created by passing a context and a config dict.
 let canvases = Array.from(document.getElementsByClassName("can"));
@@ -105,6 +104,9 @@ let charts = contexts.map(x => new Chart(x, {
     }
 }));
 
+
+initialHide();
+checkForData();
 setInterval(checkForData, 2000);
 
 
@@ -132,6 +134,18 @@ function checkForData() {
         }
     };
 }
+
+
+function initialHide(){
+    for(let i = 0; i < charts.length; i++) {
+        let parsed_id = charts[i].canvas.id.split("-")[1];
+        let hide_id = window.localStorage.getItem('opt-' + parsed_id);
+        if (hide_id == 0){
+            hideChart(parsed_id);
+        }
+    }
+}
+
 
 
 /*
