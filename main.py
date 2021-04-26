@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
+
 import os
+import sys
+
 import json
 from collections import OrderedDict
+
 from threading import Timer
 from datetime import datetime, timedelta, date
 from time import time
-import sys
+
 from random import randint, choices  # For generating test data
+import numpy as np  # For downsampling
 
 import firebase_admin
-import numpy as np  # For downsampling
 from firebase_admin import credentials, firestore, initialize_app
 
 from flask import Flask, render_template, jsonify, request
 
+# google_maps_key.py file in the same directory containing a variable "key" with a string
 from google_maps_key import key
 
 MAX_POINTS = 500  # Min/max downsample data to this amount if larger
@@ -147,24 +152,11 @@ def read(date):
         return f"An Error Occured: {e}", 404
 
 
-@app.route("/recent", methods=["GET"])
-def recentData():
-    """
-    Return the most recent data set that was sent from the car
-    """
-    try:
-        data = dict()
-        for sensor in lastRead.keys():
-            data[sensor] = lastRead[sensor]
-        return jsonify(data), 200
-    except Exception as e:
-        return f"An Error Occured: {e}", 404
-
-
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
-
+	
+### Realtime ##################################################################
 
 @app.route('/realtime', methods=['GET'])
 def realtime():
@@ -184,7 +176,42 @@ def realtime():
                            maps_url=key,
                            format=db_format,
                            no_chart=no_chart_keys)
+						   
 
+# Get real data to display on the realtime page
+@app.route("/recent", methods=["GET"])
+def recentData():
+    """
+    Return the most recent data set that was sent from the car
+    """
+    try:
+        data = dict()
+        for sensor in lastRead.keys():
+            data[sensor] = lastRead[sensor]
+        return jsonify(data), 200
+    except Exception as e:
+        return f"An Error Occured: {e}", 404
+						   
+# Get random test data to display on the realtime page
+@app.route('/realtime/data', methods=['GET'])
+def data():
+    return jsonify(battery_voltage=randint(0, 5),
+                   battery_current=randint(15, 30),
+                   battery_temperature=randint(80, 120),
+                   bms_fault=choices([0, 1], weights=[.9, .1])[0],
+                   gps_time=int(time()),  # seconds since epoch
+                   gps_lat=None,
+                   gps_lon=None,
+                   gps_velocity_east=None,
+                   gps_velocity_north=None,
+                   gps_velocity_up=None,
+                   gps_speed=None,
+                   solar_voltage=randint(0, 5),
+                   solar_current=randint(15, 30),
+                   motor_speed=randint(15, 30))
+
+
+### Daily #####################################################################
 
 @app.route('/daily', methods=['GET'])
 def daily():
@@ -317,16 +344,8 @@ def min_max_downsample(x, y, num_bins):
     c_index = np.sort(np.stack((i_min, i_max), axis=1)).ravel()
 
     return x_view[r_index, c_index], y_view[r_index, c_index]
-
-
-@app.route('/longterm', methods=['GET'])
-def longterm():
-    nav_list = NAV_LIST
-    nav = "longterm"
-    return render_template('longterm.html', **locals())
-
-
-# Throwaway test endpoint
+	
+# Generate a day of fake data and store in Firebase for testing
 @app.route('/generate-dummy-data', methods=['GET'])
 def dummy():
     try:
@@ -357,24 +376,13 @@ def dummy():
 
     return "OK"
 
+### Longterm ##################################################################
 
-@app.route('/realtime/data', methods=['GET'])
-def data():
-    return jsonify(battery_voltage=randint(0, 5),
-                   battery_current=randint(15, 30),
-                   battery_temperature=randint(80, 120),
-                   bms_fault=choices([0, 1], weights=[.9, .1])[0],
-                   gps_time=int(time()),  # seconds since epoch
-                   gps_lat=None,
-                   gps_lon=None,
-                   gps_velocity_east=None,
-                   gps_velocity_north=None,
-                   gps_velocity_up=None,
-                   gps_speed=None,
-                   solar_voltage=randint(0, 5),
-                   solar_current=randint(15, 30),
-                   motor_speed=randint(15, 30))
-
+@app.route('/longterm', methods=['GET'])
+def longterm():
+    nav_list = NAV_LIST
+    nav = "longterm"
+    return render_template('longterm.html', **locals())
 
 if __name__ == '__main__':
     app.run(debug=True)
