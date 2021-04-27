@@ -114,14 +114,12 @@ def fromCar():
                 lastRead[sensor] = req_body[sensor]
         if len(buffer) > (15*12) : #check buffer size and if it is greater than threshold
             writeToFireBase()
-            countdownToBufferClear._stop()
-            countdownToBufferClear._delete()
+            countdownToBufferClear.cancel()
             buffer.clear()
             return "Success, buffer limit reached but data uploaded, buffer cleared", 202
         return "Success, data added to buffer", 202
     except Exception as e:
-        countdownToBufferClear._stop()
-        countdownToBufferClear._delete()
+        countdownToBufferClear.cancel()
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
