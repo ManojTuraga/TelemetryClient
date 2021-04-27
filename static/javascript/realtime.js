@@ -52,6 +52,11 @@ function showChart(id) {
     $('#card-body-wrap-' + id).collapse('show')
 }
 
+function pinChart(id) {
+    let first_chart = document.getElementById('chart-row').firstChild;
+    first_chart.before(document.getElementById(id));
+}
+
 
 // Canvases hold contexts. Charts are created by passing a context and a config dict.
 let canvases = Array.from(document.getElementsByClassName("can"));
@@ -106,7 +111,7 @@ let charts = contexts.map(x => new Chart(x, {
 }));
 
 setInterval(checkForData, 2000);
-
+GridStack.init()
 
 /*
 Requests new data and calls updateChart() with it.
