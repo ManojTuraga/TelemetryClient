@@ -16,7 +16,7 @@
 	"battery_temperature": {
 		"category": "bms",
 		"name": "Battery Temperature",
-		"unit": " &deg;C",
+		"unit": " degrees",
 		"safe_max": 100,
 		"safe_min": 0
 	},
@@ -35,14 +35,14 @@
 	"gps_lat": {
 		"category": "gps",
 		"name": "Latitude",
-		"unit": " &deg;",
+		"unit": " degrees;",
 		"safe_max": null,
 		"safe_min": null
 	},
 	"gps_lon": {
 		"category": "gps",
 		"name": "Longitude",
-		"unit": " &deg;",
+		"unit": " degrees;",
 		"safe_max": null,
 		"safe_min": null
 	},
