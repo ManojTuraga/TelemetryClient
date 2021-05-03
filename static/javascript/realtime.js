@@ -114,7 +114,7 @@ let charts = contexts.map(x => new Chart(x, {
 initialHide();
 checkForData();
 setInterval(checkForData, 2000);
-GridStack.init()
+GridStack.init();
 
 /*
 Requests new data and calls updateChart() with it.

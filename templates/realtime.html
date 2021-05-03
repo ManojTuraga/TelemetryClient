@@ -31,8 +31,8 @@
 
 
         {% for datatype, datatype_dic in format.items() if datatype not in no_chart['keys'] %}
-            <div id="container-{{ datatype }}" class="grid-stack-item card-container col-12 col-lg-6 m-0 p-1">
-                <div id="card-{{ datatype }}" class="card m-1 grid-stack-item-content">
+            <div id="container-{{ datatype }}" class="card-container col-12 col-lg-6 m-0 p-1">
+                <div id="card-{{ datatype }}" class="card m-1">
                     <div class="card-header" data-toggle="collapse" data-target="#card-body-wrap-{{ datatype }}">
                         <p style="float: left; margin: 0" class="btn-link text-reset" onclick="hideChart('{{ datatype }}')">Hide</p>
 
@@ -42,7 +42,7 @@
                         </span>
                         {{datatype_dic['unit'] }}
 
-                        <p style="float: right; margin: 0" class="btn-link text-reset" onclick="pin">Pin</p>
+                        <p style="float: right; margin: 0" class="btn-link text-reset" onclick="">Pin</p>
                     </div>
 
                     <div id="card-body-wrap-{{ datatype }}" class="h-100 collapse show" style="-webkit-transition: height 0.01s;-moz-transition: height 0.01s;-o-transition: height 0.01s;transition: height 0.01s;">

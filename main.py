@@ -376,10 +376,5 @@ def data():
                    motor_speed=randint(15, 30))
 
 
-@app.route('/gj-demo')
-def demo():
-    return render_template('gj-demo.html')
-
-
 if __name__ == '__main__':
     app.run(debug=True)
