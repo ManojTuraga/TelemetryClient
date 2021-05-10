@@ -7,8 +7,8 @@ Pit-side client software to allow the user to navigate though historical and rea
 The root folder needs to have `google_maps_key.py`, `headerKey.json`, and `ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
 files with the necessary contents.
 
-## Google Cloud setup
-[Link to Medium Article on Deploying](https://medium.com/@dmahugh_70618/deploying-a-flask-app-to-google-app-engine-faa883b5ffab)
+### Google Cloud setup
+[Link to Medium article on deploying](https://medium.com/@dmahugh_70618/deploying-a-flask-app-to-google-app-engine-faa883b5ffab)
 
 [Setup GCloud Terminal](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment) (click "Install and Initialize the Cloud SDK" to download)
 

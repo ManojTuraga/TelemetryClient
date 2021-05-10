@@ -34,11 +34,11 @@
                     <div class="card-header" data-toggle="collapse" data-target="#card-body-wrap-{{ datatype }}">
                         <p style="float: left; margin: 0" class="btn-link text-reset" onclick="hideChart('{{ datatype }}')">Hide</p>
 
-                        {{ datatype_dic['name'] }}:
+                        {{ datatype_dic['name'] | safe }}:
                         <span id="head-{{datatype}}">
 
                         </span>
-                        {{datatype_dic['unit'] }}
+                        {{datatype_dic['unit'] | safe }}
 
                         <p style="float: right; margin: 0" class="btn-link text-reset">Pin</p>
                     </div>
