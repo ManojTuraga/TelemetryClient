@@ -21,7 +21,7 @@ from flask import Flask, render_template, jsonify, request
 # google_maps_key.py file in the same directory containing a variable "key" with a string
 from google_maps_key import key
 
-MAX_POINTS = 500  # Min/max downsample data to this amount if larger
+MAX_POINTS = 500 # Downsample data to this many points if there are more
 
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
@@ -113,6 +113,7 @@ def fromCar():
     collections = COL_TELEMETRY.document(timestampStr).collections()
     try:
         buffer[nowInSeconds] = {}
+        lastRead["timestamp"] = int(time())
         for col, sensor in zip(collections, SENSORS):
             if sensor in req_body.keys():
                 buffer[nowInSeconds][sensor] = req_body[sensor]
@@ -134,7 +135,7 @@ def fromCar():
 @app.route('/get/<date>', methods=['GET'])
 def read(date):
     """
-        read() : Fetches documents from Firestore collection as JSON
+        read : Fetches documents from Firestore collection as JSON
         todo : Return document that matches query ID
         all_todos : Return all documents
     """
@@ -155,7 +156,7 @@ def read(date):
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
-	
+
 ### Realtime ##################################################################
 
 @app.route('/realtime', methods=['GET'])
@@ -176,10 +177,10 @@ def realtime():
                            maps_url=key,
                            format=db_format,
                            no_chart=no_chart_keys)
-						   
+
 
 # Get real data to display on the realtime page
-@app.route("/recent", methods=["GET"])
+@app.route("/realtime/data", methods=["GET"])
 def recentData():
     """
     Return the most recent data set that was sent from the car
@@ -191,15 +192,16 @@ def recentData():
         return jsonify(data), 200
     except Exception as e:
         return f"An Error Occured: {e}", 404
-						   
+
 # Get random test data to display on the realtime page
-@app.route('/realtime/data', methods=['GET'])
+@app.route('/realtime/dummy', methods=['GET'])
 def data():
     return jsonify(battery_voltage=randint(0, 5),
                    battery_current=randint(15, 30),
                    battery_temperature=randint(80, 120),
                    bms_fault=choices([0, 1], weights=[.9, .1])[0],
-                   gps_time=int(time()),  # seconds since epoch
+                   gps_time=int(time()),
+				   timestamp=int(time()), # seconds since epoch
                    gps_lat=None,
                    gps_lon=None,
                    gps_velocity_east=None,
@@ -344,7 +346,7 @@ def min_max_downsample(x, y, num_bins):
     c_index = np.sort(np.stack((i_min, i_max), axis=1)).ravel()
 
     return x_view[r_index, c_index], y_view[r_index, c_index]
-	
+
 # Generate a day of fake data and store in Firebase for testing
 @app.route('/generate-dummy-data', methods=['GET'])
 def dummy():
@@ -385,4 +387,4 @@ def longterm():
     return render_template('longterm.html', **locals())
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
