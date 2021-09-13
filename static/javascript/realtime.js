@@ -8,6 +8,7 @@ window.chartColors = {
 	grey: 'rgb(201, 203, 207)'
 };
 
+const MAX_DATAPOINTS = 10;
 
 let color = Chart.helpers.color;
 
@@ -113,7 +114,7 @@ let charts = contexts.map(x => new Chart(x, {
 
 initialHide();
 checkForData();
-setInterval(checkForData, 2000);
+setInterval(checkForData, 500);
 GridStack.init();
 
 /*
@@ -121,19 +122,16 @@ Requests new data and calls updateChart() with it.
  */
 function checkForData() {
     const http = new XMLHttpRequest();
-    const url = "/realtime/data";
-    http.open("GET", url);
+    http.open("GET", "realtime/data?ts=" + Date.now());
     http.send();
 
     http.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
             let data = JSON.parse(http.responseText);
             for (let key in data) {
-                for(let i = 0; i < charts.length; i++) {
-                    let chart = charts[i];
-                    let parsed_id = chart.canvas.id.split("-")[1];
-                    if(parsed_id === key) {
-                        updateChart(chart, [1000*parseInt(data["gps_time"])], [parseInt(data[key])]);
+                for (let chart of charts) {
+                    if (chart.canvas.id.split("-")[1] === key) {
+                        updateChart(chart, [{x: 1000*parseInt(data["timestamp"]), y: parseInt(data[key])}]);
                     }
                 }
             }
@@ -142,35 +140,31 @@ function checkForData() {
 }
 
 
-function initialHide(){
-    for(let i = 0; i < charts.length; i++) {
-        let parsed_id = charts[i].canvas.id.split("-")[1];
-        let hide_id = window.localStorage.getItem('opt-' + parsed_id);
-        if (hide_id == 0){
-            hideChart(parsed_id);
-        }
+function initialHide() {
+    for (let chart of charts) {
+        let parsed_id = chart.canvas.id.split("-")[1];
+        let show = window.localStorage.getItem('opt-' + parsed_id);
+        if (show == 0) hideChart(parsed_id);
     }
 }
 
 
 
 /*
-Updates chart with values with paired values from time_queue, new_data_queue
+Updates chart with values with new values(s) in new_data
+new_data format: [{x:1618916940000, y:42}, ...]
+x is unix timestamp, y is sensor reading
  */
-function updateChart(chart, time_queue, new_data_queue) {
+function updateChart(chart, new_data) {
 	let data = chart.config.data.datasets[0].data;
-	for (let i=0; i < new_data_queue.length; i++) {
-		if(data.length > 5) {
-			data.splice(0, 1);
+	for (let datapoint of new_data) {
+		// Prevent duplicate datapoints for same time
+		if (data.length < 1 || datapoint.x != data[data.length-1].x) {
+			data.push(datapoint);
+			if (data.length > MAX_DATAPOINTS) data.splice(0, 1);
 		}
-		data.push({
-			x: time_queue[i],
-			y: new_data_queue[i]
-		});
-		time_queue.splice(i, 1);
-		new_data_queue.splice(i, 1);
-		chart.update();
     }
+	chart.update();
 	updateHead(chart)
 }
 

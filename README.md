@@ -1,44 +1,40 @@
 # Telemetry Client
-Pit-side client software to allow the user to navigate though historical and real time telemetry data from the car
+Pit-side client software to allow the user to navigate though historical and real time telemetry data from the car. Maintains an internal buffer of recent data and archives to Firebase Cloud Firestore. Developed using Flask and designed to be deployed to Google Cloud App Engine.
 
-## Use
+## Setup and deployment
+
+### Prerequisites
 The root folder needs to have `google_maps_key.py`, `headerKey.json`, and `ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
 files with the necessary contents.
 
-## KU Solar Car
+### Google Cloud setup
+[Link to Medium article on deploying](https://medium.com/@dmahugh_70618/deploying-a-flask-app-to-google-app-engine-faa883b5ffab)
 
-## Initial setup
-[Link to Medium Article on Deploying](https://medium.com/@dmahugh_70618/deploying-a-flask-app-to-google-app-engine-faa883b5ffab)
+[Setup GCloud Terminal](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment) (click "Install and Initialize the Cloud SDK" to download)
 
+Make sure you are in the TelemetryServer repository in your terminal before continuing
 
-[Setup GCloud Terminal](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment)
+1. Once you get GCloud setup on your terminal, make sure you have the correct project by default:
 
-Make sure you are in the TelemetryServer Repo in terminal before continuing
+`gcloud config set project ku-solar-car-b87af`
 
-1. Once you get GCloud setup on your terminal, make sure you have the correct project by default
+2. Make sure your app.yaml file is correct:
 
-`gcloud config set project MY-PROJECT-ID`
+```YAML
+runtime: python37
+entrypoint: gunicorn -b :8080 main:app
+```
 
-In this case 'MY-PROJECT-ID' is ku-solar-car-b87af
-
-2. Make sure your app.yaml file is correct
-
-##### `runtime: python37`
-
-##### `entrypoint: gunicorn -b :8080 main:app`
-
-
-#### Command to push your changes to GCloud (like git push)
-3. Then to deploy
+### Google Cloud deployment (like git push)
+3. Run the following command to deploy. This takes a few minutes.
 `gcloud app deploy`
 
-Creates the URL: https://ku-solar-car-b87af.appspot.com
+Publishes the application the URL (`gcloud app browse`): https://ku-solar-car-b87af.appspot.com
 
-
-#### Interacting with server
+### Interacting with server
 4. Post To Server (endpoint is `/car`)
 
-Make sure your POST Request body is in the following format with `timeInSecondsSinceMidnight` being the key to the values of each sensor at said time in seconds.  POST request can take multiple times in seconds at a time.  Make sure values are in the following order as well to ensure correct order of values.
+Data will come from [TelemetrySource](https://github.com/KU-Solar-Car/TelemetrySource). To send test the server, make a POST request with the body in the following format:
 
 ```json
 
@@ -60,3 +56,11 @@ Make sure your POST Request body is in the following format with `timeInSecondsS
 }
 
 ```
+
+### Note: Temporary build files
+
+Deploying to Google Cloud creates \[an absured amount of\] temporary files in the Google Cloud Storage bucket `us.artifacts.ku-solar-car-b87af.appspot.com`. These can be deleted from Google Cloud Console and set up to automatically expire to avoid going over the free tier storage limit (1 GB). 
+
+## Troubleshooting
+
+The application can be run on a development machine by running app.py with Python 3. In the Google Cloud Console, the Logs Explorer allows you to view console output, including exceptions, similar to running what you get running the application locally.
