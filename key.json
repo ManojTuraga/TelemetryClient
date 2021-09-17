@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "ku-solar-car-b87af",
+    "private_key_id": "c582204e109ed18f77a6967db11cdea757784b10",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCs3zHO7PZPqH36\nKARF/+ZhN31mz0P0I81m/zyKykq1cfDmtDpxgh21HsCyuywrOcM+5NMmQp9H9mSr\nvTY0M4e+DpRLHoIs9iUrBwtz3LbCwul1cNuCnC3R52npY05j+7Ti8ufEgLY64XjX\nZGxSwhVB54Z1h8i4Ii++RTcd1k0RkWB2w4RPa0a0ticMm2Ut1VtlAVhkMQDnbLrp\nfbdoT2b627ImiRW3AIOFneHgYPjMpyUamvqdE94P7lXwD/M71I0jaYerPzPzCZzC\nJiLIDoYkkpeP5GCqxlGeCGfO3+5WszxOyDrUXGLOt1skDVUBAb2n8ZbzL4HeRaxq\npPyJYV67AgMBAAECggEAEMrFbdI6wtYdFpWYhKws1rirJ7duZGKt6xlT6i9oPmPJ\nAL/1BV2cQSGxmirwSWqc+pkDoa3LBxR6BuykPUHcJ6wG350hC/kE9z8B78k6v4Rr\nZQsHZ5KAKOmPsioBTVj/4yOxO7c8/E82i8WneAp+Qh6ZQwVji+9WL+dNSUqtxczu\ncHypOM+ARC2r7i1DABEHrHAhzcMYjw5vRI3Q02Hvr2VR1G9KMCcrGAyG0g8NS7QX\nrYlZyhzqPW6+RnL38uuF7+GpGuj6p9NB/2/S8JW6LoySwGr7yKWXu04Y9AMyn2hQ\ndgIbe9J28qJXd4k6SFx4yjmh7go7hTOrottUSMS7QQKBgQDU95E75aigyV8/zZY5\n44gGEsoZalA8WrkRiMokpaEwJIBf++D/WN77S/EiV/xoJwbwuysg1ALY8IUQS/1e\nXTig67JlVo3ZzXtAf/rdGYwwBN1nCKYb1JaBIhoT3nK1XRDyoDBSZgI07mnRVyTp\n0Jd22NZVKwLa4uijG49Btfe3cQKBgQDPzZGZ06drn1aTxM2gf/Ijo3SFmHHD5msv\nAhNOgoyiEuDH7AoF0nRnClGCOUHtRNDjUSjw471xH18mYx4lpKRp3nUQSsv9tBOi\nr1DlopQ9qbDLT5kkwtQxSE20SV+GPcxv3zqh+sfFRsu5f6t2TftmyoFQHHSnAS/N\ncyhsZ8Ka6wKBgCxE1fzEbXwWv+TsYFjiMilJCJel4M3a8fNyIsrhXxM50zGgkxGh\nMKC+FX7VGVOxISEzVvC5AWqE/LP5h85wxE+3Dts/1ba7nu42bDg/kkN9D2TWiGjq\nlOp84zzUFbYbhWVZ5RGLwNOt53MrkTHFOWbsBgmoKizD1CXrmajIIZkRAoGAYVVP\ncrbxv3ZFzjcrfZcQauMADCdoejLuV3loY6jAiJXBFcOYujtmbHEn1pBNMf6+vQrh\n21tA+8CPB+L7VvR0UmZxfK0cOXxkihoGEVmCiBN4jPJ+r/pV+7N7Ogv4I1/E502v\nH/ngIqZTfFKxlFtYe0A1K7n4ZdUnd9sNvyEmxPsCgYBnT1XESMPbdw4dksOzo38b\ngG1f6cJcxVb2W+JtIOI2yGSBDIzTm9iZay14KiOG/vEyO8rGiGuwOGwMOjJtMZnx\n+NDY8CrJrJZdXlMv/shnRNtJKm8OKTYkADkFdqX18DGHYCBXWn7D/FJHYsqFgj8T\n+9VtPEOpmy7XXtKjobGWCA==\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-vszmg@ku-solar-car-b87af.iam.gserviceaccount.com",
+    "client_id": "107691402199188063159",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-vszmg%40ku-solar-car-b87af.iam.gserviceaccount.com"
+  }
+  
