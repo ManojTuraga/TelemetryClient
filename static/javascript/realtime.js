@@ -93,7 +93,7 @@ let charts = contexts.map(x => new Chart(x, {
                 display: true,
                 scaleLabel: {
                     display: true,
-                    labelString: 'value'
+                    labelString: 'Value'
                 },
                 ticks: {
                     beginAtZero: true,
