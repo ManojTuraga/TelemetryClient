@@ -260,7 +260,7 @@ def daily():
 
         # Avoid a server error if there's no data for the day (lat_gen yields no values)
         try:
-            lat_reading_dict = next(lat_gen).to_dict()["seconds"]  # dict format: {'second': reading}, ex. {'10': 334}
+            lat_reading_dict = next(lat_gen).to_dict() # dict format: {'second': reading}, ex. {'10': 334}
         except StopIteration:
             location_pairs = None
             return render_template('daily_location.html', **locals())
@@ -273,7 +273,7 @@ def daily():
         lon_gen = db.collection(DATABASE_COLLECTION).document(date_str).collection('gps_lon').stream()
 
         try:
-            lon_reading_dict = next(lon_gen).to_dict()["seconds"]
+            lon_reading_dict = next(lon_gen).to_dict()
         except StopIteration:
             location_pairs = None
             return render_template('daily_location.html', **locals())
@@ -282,7 +282,7 @@ def daily():
             sorted({int(k): v for k, v in lon_reading_dict.items() if starttime <= int(k) <= endtime}.items())
         sec_list, lon_list = zip(*lon_reading_list)
 
-        location_pairs = zip(lat_list, lon_list)  # [(lat0, lon0), (lat1, lon1), ...]
+        location_pairs = list(zip(lat_list, lon_list))  # [(lat0, lon0), (lat1, lon1), ...]
 
         return render_template('daily_location.html', **locals())
     else:
