@@ -21,7 +21,7 @@ from flask import Flask, render_template, jsonify, request
 # google_maps_key.py file in the same directory containing a variable "key" with a string
 from google_maps_key import key
 
-MAX_POINTS = 500 # Downsample data to this many points if there are more
+MAX_POINTS = 500  # Downsample data to this many points if there are more
 
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
@@ -36,13 +36,10 @@ COL_TELEMETRY = db.collection('telemetry')
 buffer = dict()
 lastRead = dict()
 
-dateTimeObj = datetime.now()
-timestampStr = dateTimeObj.strftime("%Y-%m-%d")
-
 app = Flask(__name__, static_url_path='/static')
 
-SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_lat","gps_lon", "gps_speed", "gps_time",
-"gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed", "solar_current", "solar_voltage"]
+SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_dt", "gps_lat", "gps_lon",
+           "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed", "solar_current", "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
@@ -59,14 +56,17 @@ def writeToFireBase():
     """
     This function will write to Firebase with the given buffer.
     """
+    timestampStr = datetime.now().strftime("%Y-%m-%d")
+
     try:
-        collections = COL_TELEMETRY.document(timestampStr).collections()
+        collections = getOrderedCollections(timestampStr)
         for col, sensor in zip(collections, SENSORS):
             for sec in buffer.keys():
-                data_per_timeframe = int(buffer[sec][sensor])
-                col.document("0").update({
-                    str(sec) : data_per_timeframe
-                })
+                if sensor in buffer[sec]:
+                    data_per_timeframe = buffer[sec][sensor]
+                    col.document("0").update({
+                        str(sec): data_per_timeframe
+                    })
         buffer.clear()
         print("Buffer clear")
     except Exception as e:
@@ -75,16 +75,18 @@ def writeToFireBase():
         print(exc_type, fname, exc_tb.tb_lineno)
         print(e)
 
+
 countdownToBufferClear = Timer(60.0, writeToFireBase)
 
-def create():
+
+def create(doc_datetime):
     """
         create() : Add document to Firestore collection with request body
         Ensure you pass a custom ID as part of json body in post request
         e.g. json={'id': '1', 'title': 'Write a blog post'}
     """
-    dateTimeObj = datetime.now()
-    timestampStr = dateTimeObj.strftime("%Y-%m-%d")
+    timestampStr = doc_datetime.strftime("%Y-%m-%d")
+
     if not COL_TELEMETRY.document(timestampStr).get().exists:
         try:
             COL_TELEMETRY.document(timestampStr).set({"Date": timestampStr})
@@ -98,27 +100,45 @@ def create():
 
 @app.route('/car', methods=['POST'])
 def fromCar():
+    # Make sure the data source is legit.
     auth = request.headers['Authentication']
     if auth != headerKey["Authentication"]:
         return f"An Error Occured: Authentication Failed", 401
+
+    # Start over buffer timer clear.
     global countdownToBufferClear
-    if countdownToBufferClear.is_alive() == False:
+    if not countdownToBufferClear.is_alive():
         countdownToBufferClear = Timer(60.0, writeToFireBase)
         countdownToBufferClear.start()
-    now = datetime.now()
+
     req_body = request.get_json()
-    nowInSeconds = round((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+
+    # If gps sent date and time, convert it to timestamp to add as a field.
+    if 'gps_date' in req_body and 'gps_time' in req_body:
+        raw_date = req_body['gps_date']  # Format ddmmyy.
+        raw_time = req_body['gps_time'][0:6]  # Format hhmmsscc.
+        req_body['gps_dt'] = datetime.strptime(raw_date + raw_time, '%d%m%y%H%M%S')
+    else:
+        req_body['gps_dt'] = datetime.fromtimestamp(0)
+
+    label_dt = datetime.now()
+
+    sec_of_day = round((label_dt - label_dt.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+    print(sec_of_day)
+
+    timestampStr = label_dt.strftime("%Y-%m-%d")
     if not COL_TELEMETRY.document(timestampStr).get().exists:
-        create()
-    collections = COL_TELEMETRY.document(timestampStr).collections()
+        create(label_dt)
+    collections = getOrderedCollections(timestampStr)
+
     try:
-        buffer[nowInSeconds] = {}
+        buffer[sec_of_day] = {}
         lastRead["timestamp"] = int(time())
         for col, sensor in zip(collections, SENSORS):
             if sensor in req_body.keys():
-                buffer[nowInSeconds][sensor] = req_body[sensor]
+                buffer[sec_of_day][sensor] = req_body[sensor]
                 lastRead[sensor] = req_body[sensor]
-        if len(buffer) > (15*12) : #check buffer size and if it is greater than threshold
+        if len(buffer) > (15*12):  # Check buffer size and if it is greater than threshold.
             writeToFireBase()
             countdownToBufferClear.cancel()
             buffer.clear()
@@ -156,6 +176,10 @@ def read(date):
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+
+def getOrderedCollections(timestampStr):
+    return sorted(list(COL_TELEMETRY.document(timestampStr).collections()), key=lambda x: x.id)
 
 ### Realtime ##################################################################
 
@@ -347,6 +371,7 @@ def min_max_downsample(x, y, num_bins):
 
     return x_view[r_index, c_index], y_view[r_index, c_index]
 
+
 # Generate a day of fake data and store in Firebase for testing
 @app.route('/generate-dummy-data', methods=['GET'])
 def dummy():
@@ -362,21 +387,21 @@ def dummy():
     try:
         readings = next(db_data)
         return "Date already has data"
-    except StopIteration: # This means its safe to generate data (without overwriting)
+    except StopIteration:  # This means its safe to generate data (without overwriting)
         pass
 
-    TEST_SENSORS = \
+    test_sensors = \
         {"battery_voltage": [300, 400], "battery_current": [200, 500], "bms_fault": [0, 1], "battery_level": [60, 70]}
     date_doc = db.collection(DATABASE_COLLECTION).document(date_str)
 
-    for sensor, rand_range in TEST_SENSORS.items():
+    for sensor, rand_range in test_sensors.items():
         dummy_data = {"seconds": {}}
         for i in range(0, 86400, 5):
             dummy_data["seconds"][str(i)] = randint(rand_range[0], rand_range[1])
         date_doc.collection(sensor).document("0").set(dummy_data, merge=True)
-        #print(dummy_data)
 
     return "OK"
+
 
 ### Longterm ##################################################################
 
@@ -385,6 +410,7 @@ def longterm():
     nav_list = NAV_LIST
     nav = "longterm"
     return render_template('longterm.html', **locals())
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)
