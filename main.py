@@ -1,3 +1,5 @@
+# TODO: write with time
+
 #!/usr/bin/env python3
 
 import os
@@ -27,6 +29,8 @@ CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
 
+BUFFER_TIME = 2.0
+
 cred = credentials.Certificate("ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json")
 f = open('headerKey.json', 'r')
 headerKey = json.load(f)
@@ -38,9 +42,9 @@ lastRead = dict()
 
 app = Flask(__name__, static_url_path='/static')
 
-SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_dt", "gps_lat", "gps_lon",
-           "gps_speed", "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed", "solar_current",
-           "solar_voltage"]
+SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_course", "gps_dt", "gps_lat",
+           "gps_lon", "gps_speed", "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed",
+           "solar_current", "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
