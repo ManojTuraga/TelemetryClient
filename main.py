@@ -39,7 +39,8 @@ lastRead = dict()
 app = Flask(__name__, static_url_path='/static')
 
 SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_dt", "gps_lat", "gps_lon",
-           "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed", "solar_current", "solar_voltage"]
+           "gps_speed", "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed", "solar_current",
+           "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
@@ -76,7 +77,7 @@ def writeToFireBase():
         print(e)
 
 
-countdownToBufferClear = Timer(60.0, writeToFireBase)
+countdownToBufferClear = Timer(BUFFER_TIME, writeToFireBase)
 
 
 def create(doc_datetime):
@@ -108,7 +109,7 @@ def fromCar():
     # Start over buffer timer clear.
     global countdownToBufferClear
     if not countdownToBufferClear.is_alive():
-        countdownToBufferClear = Timer(60.0, writeToFireBase)
+        countdownToBufferClear = Timer(BUFFER_TIME, writeToFireBase)
         countdownToBufferClear.start()
 
     req_body = request.get_json()
@@ -216,6 +217,7 @@ def recentData():
         return jsonify(data), 200
     except Exception as e:
         return f"An Error Occured: {e}", 404
+
 
 # Get random test data to display on the realtime page
 @app.route('/realtime/dummy', methods=['GET'])
