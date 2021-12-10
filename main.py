@@ -1,5 +1,3 @@
-# TODO: write with time
-
 #!/usr/bin/env python3
 
 import os
@@ -29,7 +27,7 @@ CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
 
-BUFFER_TIME = 2.0
+BUFFER_TIME = 60.0
 
 cred = credentials.Certificate("ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json")
 f = open('headerKey.json', 'r')
