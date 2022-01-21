@@ -23,14 +23,8 @@
 	"bms_fault": {
 		"category": "bms",
 		"name": "Isolation Fault Sensor",
-		"safe_max": null,
-		"safe_min": null
-	},
-	"gps_time": {
-		"category": "gps",
-		"name": "GPS Timestamp",
-		"safe_max": null,
-		"safe_min": null
+		"safe_max": 0,
+		"safe_min": 0
 	},
 	"gps_lat": {
 		"category": "gps",
@@ -46,33 +40,19 @@
 		"safe_max": null,
 		"safe_min": null
 	},
-	"gps_velocity_east": {
-		"category": "gps",
-		"name": "Eastward velocity (via GPS)",
-		"unit": " mph",
-		"safe_max": null,
-		"safe_min": null
-	},
-	"gps_velocity_north": {
-		"category": "gps",
-		"name": "Northward velocity (via GPS)",
-		"unit": " mph",
-		"safe_max": null,
-		"safe_min": null
-	},
-	"gps_velocity_up": {
-		"category": "gps",
-		"name": "Upward velocity (via GPS)",
-		"unit": " mph",
-		"safe_max": null,
-		"safe_min": null
-	},
 	"gps_speed": {
 		"category": "gps",
 		"name": "Car speed (via GPS)",
 		"unit": " km",
 		"safe_max": null,
 		"safe_min": null
+	},
+	"gps_course": {
+		"category": "gps",
+		"name": "Car course (via GPS)",
+		"unit": " degrees",
+		"safe_min": null,
+		"safe_max": null
 	},
 	"solar_voltage": {
 		"category": "mppt",
