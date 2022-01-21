@@ -41,8 +41,7 @@ lastRead = dict()
 app = Flask(__name__, static_url_path='/static')
 
 SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_course", "gps_dt", "gps_lat",
-           "gps_lon", "gps_speed", "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed",
-           "solar_current", "solar_voltage"]
+           "gps_lon", "gps_speed", "motor_speed", "solar_current", "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
@@ -191,7 +190,8 @@ def realtime():
     nav_list = NAV_LIST
     nav = "realtime"
     no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
-        'keys': ["gps_time",
+        'keys': ["gps_dt",
+                 "gps_course",
                  "gps_lon",
                  "gps_lat",
                  "gps_velocity_east",
