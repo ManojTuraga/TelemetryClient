@@ -7,32 +7,39 @@ import json
 from collections import OrderedDict
 
 from threading import Timer
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from time import time
 
 from random import randint, choices  # For generating test data
 import numpy as np  # For downsampling
 
 import firebase_admin
-from firebase_admin import credentials, firestore, initialize_app
-
+from firebase_admin import credentials, firestore
 from flask import Flask, render_template, jsonify, request
+from google.cloud import error_reporting
 
 # google_maps_key.py file in the same directory containing a variable "key" with a string
-from google_maps_key import key
+from secrets.google_maps_key import key
 
 MAX_POINTS = 500  # Downsample data to this many points if there are more
+BUFFER_TIME = 60.0  # Send data every 60 seconds.
 
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
 
-BUFFER_TIME = 60.0
+FIREBASE_SERVICE_ACCT_FILE = "secrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
+AUTH_HEADER_KEY = "secrets/headerKey.json"
 
-cred = credentials.Certificate("ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json")
-f = open('headerKey.json', 'r')
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/ku-solar-car-b87af-eccda8dd87e0.json"
+reporting_client = error_reporting.Client()
+
+f = open(AUTH_HEADER_KEY, 'r')
 headerKey = json.load(f)
+
+cred = credentials.Certificate(FIREBASE_SERVICE_ACCT_FILE)
 firebase_admin.initialize_app(cred, {"projectId": "ku-solar-car-b87af"})
+
 db = firestore.client()
 COL_TELEMETRY = db.collection('telemetry')
 buffer = dict()
@@ -41,8 +48,7 @@ lastRead = dict()
 app = Flask(__name__, static_url_path='/static')
 
 SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_course", "gps_dt", "gps_lat",
-           "gps_lon", "gps_speed", "gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed",
-           "solar_current", "solar_voltage"]
+           "gps_lon", "gps_speed", "motor_speed", "solar_current", "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
@@ -73,6 +79,8 @@ def writeToFireBase():
         buffer.clear()
         print("Buffer clear")
     except Exception as e:
+        reporting_client.report_exception()
+
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
@@ -97,6 +105,7 @@ def create(doc_datetime):
                 COL_TELEMETRY.document(timestampStr).collection(sensor).document("0").set({})
             return "Documents Created", 201
         except Exception as e:
+            reporting_client.report_exception()
             return f"An Error Occured: {e}", 400
     return "Document already exists", 200
 
@@ -148,6 +157,8 @@ def fromCar():
             return "Success, buffer limit reached but data uploaded, buffer cleared", 202
         return "Success, data added to buffer", 202
     except Exception as e:
+        reporting_client.report_exception()
+
         countdownToBufferClear.cancel()
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -173,6 +184,7 @@ def read(date):
                 data[str(col.id)] = doc.to_dict()
         return jsonify(data), 200
     except Exception as e:
+        reporting_client.report_exception()
         return f"An Error Occured: {e}", 404
 
 
@@ -191,7 +203,8 @@ def realtime():
     nav_list = NAV_LIST
     nav = "realtime"
     no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
-        'keys': ["gps_time",
+        'keys': ["gps_dt",
+                 "gps_course",
                  "gps_lon",
                  "gps_lat",
                  "gps_velocity_east",
@@ -218,6 +231,7 @@ def recentData():
             data[sensor] = lastRead[sensor]
         return jsonify(data), 200
     except Exception as e:
+        reporting_client.report_exception()
         return f"An Error Occured: {e}", 404
 
 
