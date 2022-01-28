@@ -176,7 +176,9 @@ function updateHead(chart) {
     header.innerText = latest_val;
 
     let card_header = header.parentNode;
-    let unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
+    let unsafe_val = false;
+    if (db_format[data_key]["safe_max"] != null && db_format[data_key]["safe_min"] != null)
+        unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
     card_header.classList.toggle('bg-danger', unsafe_val);
     card_header.classList.toggle('text-white', unsafe_val);
 }

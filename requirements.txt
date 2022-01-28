@@ -2,3 +2,4 @@ Flask
 firebase-admin
 gunicorn
 numpy
+google-cloud-error-reporting
