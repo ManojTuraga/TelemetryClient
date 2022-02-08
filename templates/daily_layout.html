@@ -4,13 +4,24 @@
 {% endblock %}
 {% block date %}
 
-                    <div id="date-changer">
-							  <div class="input-group ml-4 d-flex justify-content-center">
+                    <div id="date-changer" style="position: absolute;
+						  		left: 50%;
+						  		transform:translateX(-50%);">
+							  <div class="input-group ml-4">
 								<form class="input-group-prepend"><button type="submit" class="btn btn-primary" name="date" value="{{prev_date_str}}">&#9668;</button><input type="hidden" name="tab" value="{{tab}}"></form>
-								<form><input type="hidden" name="tab" value="{{tab}}"><input type="date" class="form-control" name="date" value="{{date_str}}" oninput="this.form.submit()"></form>
+								<form>
+									<input type="hidden" name="tab" value="{{tab}}">
+									<input list="Date" name="date" onchange="this.form.submit()" class="form-control" placeholder="{{date_str}}">
+									<datalist id="Date" value="{{date_str}}" name="{{date_str}}">
+										{% for date in list_of_days %}
+										<option value="{{date}}">
+										{% endfor %}
+									</datalist>
+									<!--<input type="submit"> -->
+								</form>
 								<form class="input-group-append"><input type="hidden" name="tab" value="{{tab}}"><button type="submit" class="btn btn-primary" name="date" value="{{next_date_str}}">&#9658;</button></form>
 							  </div>
-                    </div>
+						  </div>
 {% endblock %}
 
 {% block body %}
