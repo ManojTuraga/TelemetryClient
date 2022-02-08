@@ -256,17 +256,33 @@ def data():
 @app.route('/daily', methods=['GET'])
 def daily():
     nav_list = NAV_LIST
-    nav = "daily"
+    list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
     # Check if valid date was provided as GET parameter, default to today (at midnight) if not
+    #try:
+        #date = datetime.strptime(request.args.get('date', default=""), '%Y-%m-%d')
+    #except ValueError:
+        #date = datetime.combine(datetime.today(), datetime.min.time())
+
     try:
         date = datetime.strptime(request.args.get('date', default=""), '%Y-%m-%d')
-    except ValueError:
-        date = datetime.combine(datetime.today(), datetime.min.time())
+    except ValueError or IndexError:
+        date = datetime.strptime(list_of_days[-1], '%Y-%m-%d')
 
     # Formatted date strings when rendering page and buttons to other dates
+    #date_str = date.strftime('%Y-%m-%d')
+    #prev_date_str = (date-timedelta(days=1)).strftime('%Y-%m-%d')
+    #next_date_str = (date+timedelta(days=1)).strftime('%Y-%m-%d')
     date_str = date.strftime('%Y-%m-%d')
-    prev_date_str = (date-timedelta(days=1)).strftime('%Y-%m-%d')
-    next_date_str = (date+timedelta(days=1)).strftime('%Y-%m-%d')
+
+    for day in list_of_days:
+        if date_str <= day:
+            prev_date_str = list_of_days[list_of_days.index(day)-1]
+            next_date_str = list_of_days[(list_of_days.index(day)+1)%len(list_of_days)]
+            break
+
+    else:
+        prev_date_str = list_of_days[-1]
+        next_date_str = list_of_days[0]
 
     tab_list = client_format.keys()
 
@@ -325,29 +341,54 @@ def daily():
         return render_template('daily_location.html', **locals())
     else:
         # Loop through every sensor the current tab should show a reading for
+        #print(client_format[tab]["lines"])
         for sensor_id in client_format[tab]["lines"]:
-
             # Find the info about the sensor
-            sensor = db_format[sensor_id]
+	    try:
+                sensor = db_format[sensor_id]
+	    except KeyError:
+		pass
+            #print(sensor, sensor_id)
 
             # Ensure the sensor is in the database
-            if sensor is not None and "name" in sensor:
+            if sensor is not None and "name" in sensor.keys():
                 graph_data[sensor["name"]] = OrderedDict()
 
                 # Loop through all the sensor readings for the day being viewed
-                db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).stream()
-                try:
-                    readings = next(db_data).to_dict()["seconds"] # The map within the sensor's document
-                except StopIteration:
-                    continue  # Skip sensors not in database
-                except KeyError:
-                    continue
+##              db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).stream()
+
+
+                # Creates dictionary with all the data within the specific sensor_id, will be a NoneType of the date_str is not in the database
+                db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).document("0").get().to_dict()
+                #list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
+                
+##                try:
+##                    readings = next(db_data).to_dict()["seconds"] # The map within the sensor's document
+##
+##                    readings 
+##                except StopIteration:
+##                    continue  # Skip sensors not in database
+##                except KeyError:
+##                    continue
 
                 # Convert keys from strings to ints and sort (conversion required for sort to be correct)
-                sorted_readings = sorted({int(k) : v for k, v in readings.items()}.items())
 
-                # Convert the sorted list of tuples into two separate lists using zip
-                times, readings = zip(*sorted_readings)
+##              sorted_readings = sorted({int(k) : v for k, v in readings.items()}.items())
+
+                #Tries to sort the entries, checks if there is a NoneType. If so, will assign empty lists to times and readings
+                try:
+                    sorted_readings = sorted({int(k) : v for k, v in db_data.items()}.items())
+
+                    # Convert the sorted list of tuples into two separate lists using zip
+                    times, readings = zip(*sorted_readings)
+
+                except AttributeError:
+                    times, readings = [], []
+
+                except ValueError:
+                    times, readings = [], []
+
+                #times, readings = zip(*sorted_readings)
 
                 # Downsample data if needed
                 if len(readings) > MAX_POINTS:
