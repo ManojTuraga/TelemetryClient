@@ -8,7 +8,7 @@ window.chartColors = {
 	grey: 'rgb(201, 203, 207)'
 };
 
-const MAX_DATAPOINTS = 10;
+const MAX_DATAPOINTS = 40;
 
 let color = Chart.helpers.color;
 
@@ -115,22 +115,18 @@ setInterval(checkForData, 500);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-    const http = new XMLHttpRequest();
-    http.open("GET", "realtime/data?ts=" + Date.now());
-    http.send();
-
-    http.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            let data = JSON.parse(http.responseText);
-            for (let key in data) {
+	fetch("realtime/data?ts=" + Date.now())
+		.then(response => response.json())
+		.then(data => {
+			for (let key in data) {
                 for (let chart of charts) {
                     if (chart.canvas.id.split("-")[1] === key) {
-                        updateChart(chart, [{x: 1000*parseInt(data["timestamp"]), y: parseInt(data[key])}]);
+                        updateChart(chart, [{x: 1000*parseInt(data["timestamp"]), y: parseFloat(data[key])}]);
                     }
                 }
             }
-        }
-    };
+			updateMap(data); // In realtime_map.js
+		});
 }
 
 

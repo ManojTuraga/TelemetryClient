@@ -18,8 +18,8 @@ from firebase_admin import credentials, firestore
 from flask import Flask, render_template, jsonify, request
 from google.cloud import error_reporting
 
-# google_maps_key.py file in the same directory containing a variable "key" with a string
-from secrets.google_maps_key import key
+# each key is just a string variable
+from secrets import keys
 
 MAX_POINTS = 500  # Downsample data to this many points if there are more
 BUFFER_TIME = 60.0  # Send data every 60 seconds.
@@ -29,13 +29,9 @@ DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
 
 FIREBASE_SERVICE_ACCT_FILE = "secrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
-AUTH_HEADER_KEY = "secrets/headerKey.json"
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/ku-solar-car-b87af-eccda8dd87e0.json"
 reporting_client = error_reporting.Client()
-
-f = open(AUTH_HEADER_KEY, 'r')
-headerKey = json.load(f)
 
 cred = credentials.Certificate(FIREBASE_SERVICE_ACCT_FILE)
 firebase_admin.initialize_app(cred, {"projectId": "ku-solar-car-b87af"})
@@ -113,8 +109,7 @@ def create(doc_datetime):
 @app.route('/car', methods=['POST'])
 def fromCar():
     # Make sure the data source is legit.
-    auth = request.headers['Authentication']
-    if auth != headerKey["Authentication"]:
+    if request.headers['Authentication'] != keys.transmitter_authentication:
         return f"An Error Occured: Authentication Failed", 401
 
     # Start over buffer timer clear.
@@ -214,7 +209,8 @@ def realtime():
     return render_template('realtime.html',
                            nav_list=nav_list,
                            nav=nav,
-                           maps_url=key,
+                           maps_url=keys.google_maps_key,
+						   mapbox_key=keys.mapbox_key,
                            format=db_format,
                            no_chart=no_chart_keys)
 
@@ -285,7 +281,7 @@ def daily():
 
     if tab == "Location":  # Location tab uses separate template to display map
         # URL to initialize Google Maps API, to be injected into HTML. Key: value is from local google_maps_key.py file.
-        maps_url = key
+        maps_url = keys.google_maps_key
 
         # Check if valid times were provided as GET parameter, default to all day if not
         try:
