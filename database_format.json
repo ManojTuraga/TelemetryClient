@@ -43,7 +43,7 @@
 	"gps_speed": {
 		"category": "gps",
 		"name": "Car speed (via GPS)",
-		"unit": " km",
+		"unit": " mph",
 		"safe_max": null,
 		"safe_min": null
 	},
