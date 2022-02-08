@@ -344,10 +344,8 @@ def daily():
         #print(client_format[tab]["lines"])
         for sensor_id in client_format[tab]["lines"]:
             # Find the info about the sensor
-	    try:
-                sensor = db_format[sensor_id]
-	    except KeyError:
-		pass
+            if sensor_id not in db_format: continue
+            sensor = db_format[sensor_id]
             #print(sensor, sensor_id)
 
             # Ensure the sensor is in the database
