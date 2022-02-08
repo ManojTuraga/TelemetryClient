@@ -1,9 +1,6 @@
 {% extends "layout.html" %}
 {% block head %}
 	{{ super() }}
-    <script src="../static/javascript/lib/dist/gridstack-h5.js"></script>
-    <link href="../static/javascript/lib/dist/gridstack.min.css" rel="stylesheet"/>
-	
 	<!-- https://leafletjs.com/examples/quick-start/ -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
 		integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
@@ -11,6 +8,18 @@
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
 		integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
 		crossorigin=""></script>
+		
+	<style>
+		#map-follow-label {
+			position: absolute;
+			background: rgba(255, 255, 255, 0.7);
+			left: 0;
+			bottom: 0;
+			z-index: 1000;
+			margin: 0;
+			padding: 0 0.2rem;
+		}
+	</style>
 {% endblock %}
 {% block body %}
 	<body>
@@ -48,6 +57,7 @@
 				<div id="card-body-wrap-map" class="h-100 collapse show" style="transition: height 0.01s;">
 					<div class="card-body p-0">
 						<div id="map" style="height: 276px;"></div>
+						<label id="map-follow-label"><input type="checkbox" id="map-follow" checked> Follow car</label>
 					</div>
 				</div>
 			</div>

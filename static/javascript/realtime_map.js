@@ -46,7 +46,9 @@ function updateMap(data) {
 			L.polyline([coords[i-1].slice(0, 2), coords[i].slice(0, 2)], {"color": "hsl(" + hue + ", 100%, 50%)"}).addTo(path);
 		}
 		
-		map.fitBounds(path.getBounds()); // Zoom map to lines
+		if (document.getElementById("map-follow").checked) {
+			map.fitBounds(path.getBounds()); // Zoom map to lines
+		}
 		
 		document.getElementById("head-map").innerText = data["gps_lat"] + ", " + data["gps_lon"];
 	}
