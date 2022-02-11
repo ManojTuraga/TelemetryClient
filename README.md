@@ -5,7 +5,7 @@ Pit-side client software to allow the user to navigate though historical and rea
 Automated build deployment is enabled for the `master` branch, so pushing to `master` deploys the code to production. Follow the instructions below to push from your local.
 
 ### Prerequisites
-The root folder needs to have `secrets/__init__.py`, `secrets/google_maps_key.py`, `secrets/headerKey.json`, `secrets/ku-solar-car-b87af-eccda8dd87e0.json`, and `secrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
+The root folder needs to have `secrets/__init__.py`, `secrets/keys.py`, `secrets/ku-solar-car-b87af-eccda8dd87e0.json`, and `secrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
 files with the necessary contents. You can download them from Slack.
 
 ### Google Cloud setup
