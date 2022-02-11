@@ -7,42 +7,44 @@ import json
 from collections import OrderedDict
 
 from threading import Timer
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from time import time
 
 from random import randint, choices  # For generating test data
 import numpy as np  # For downsampling
 
 import firebase_admin
-from firebase_admin import credentials, firestore, initialize_app
-
+from firebase_admin import credentials, firestore
 from flask import Flask, render_template, jsonify, request
+from google.cloud import error_reporting
 
-# google_maps_key.py file in the same directory containing a variable "key" with a string
-from google_maps_key import key
+# each key is just a string variable
+from secrets import keys
 
-MAX_POINTS = 500 # Downsample data to this many points if there are more
+MAX_POINTS = 500  # Downsample data to this many points if there are more
+BUFFER_TIME = 60.0  # Send data every 60 seconds.
 
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
 
-cred = credentials.Certificate("ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json")
-f = open('headerKey.json', 'r')
-headerKey = json.load(f)
+FIREBASE_SERVICE_ACCT_FILE = "secrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/ku-solar-car-b87af-eccda8dd87e0.json"
+reporting_client = error_reporting.Client()
+
+cred = credentials.Certificate(FIREBASE_SERVICE_ACCT_FILE)
 firebase_admin.initialize_app(cred, {"projectId": "ku-solar-car-b87af"})
+
 db = firestore.client()
 COL_TELEMETRY = db.collection('telemetry')
 buffer = dict()
 lastRead = dict()
 
-dateTimeObj = datetime.now()
-timestampStr = dateTimeObj.strftime("%Y-%m-%d")
-
 app = Flask(__name__, static_url_path='/static')
 
-SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_lat","gps_lon", "gps_speed", "gps_time",
-"gps_velocity_east", "gps_velocity_north", "gps_velocity_up", "motor_speed", "solar_current", "solar_voltage"]
+SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_course", "gps_dt", "gps_lat",
+           "gps_lon", "gps_speed", "motor_speed", "solar_current", "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
@@ -59,32 +61,39 @@ def writeToFireBase():
     """
     This function will write to Firebase with the given buffer.
     """
+    timestampStr = datetime.now().strftime("%Y-%m-%d")
+
     try:
-        collections = COL_TELEMETRY.document(timestampStr).collections()
+        collections = getOrderedCollections(timestampStr)
         for col, sensor in zip(collections, SENSORS):
             for sec in buffer.keys():
-                data_per_timeframe = int(buffer[sec][sensor])
-                col.document("0").update({
-                    str(sec) : data_per_timeframe
-                })
+                if sensor in buffer[sec]:
+                    data_per_timeframe = buffer[sec][sensor]
+                    col.document("0").update({
+                        str(sec): data_per_timeframe
+                    })
         buffer.clear()
         print("Buffer clear")
     except Exception as e:
+        reporting_client.report_exception()
+
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
         print(e)
 
-countdownToBufferClear = Timer(60.0, writeToFireBase)
 
-def create():
+countdownToBufferClear = Timer(BUFFER_TIME, writeToFireBase)
+
+
+def create(doc_datetime):
     """
         create() : Add document to Firestore collection with request body
         Ensure you pass a custom ID as part of json body in post request
         e.g. json={'id': '1', 'title': 'Write a blog post'}
     """
-    dateTimeObj = datetime.now()
-    timestampStr = dateTimeObj.strftime("%Y-%m-%d")
+    timestampStr = doc_datetime.strftime("%Y-%m-%d")
+
     if not COL_TELEMETRY.document(timestampStr).get().exists:
         try:
             COL_TELEMETRY.document(timestampStr).set({"Date": timestampStr})
@@ -92,39 +101,59 @@ def create():
                 COL_TELEMETRY.document(timestampStr).collection(sensor).document("0").set({})
             return "Documents Created", 201
         except Exception as e:
+            reporting_client.report_exception()
             return f"An Error Occured: {e}", 400
     return "Document already exists", 200
 
 
 @app.route('/car', methods=['POST'])
 def fromCar():
-    auth = request.headers['Authentication']
-    if auth != headerKey["Authentication"]:
+    # Make sure the data source is legit.
+    if request.headers['Authentication'] != keys.transmitter_authentication:
         return f"An Error Occured: Authentication Failed", 401
+
+    # Start over buffer timer clear.
     global countdownToBufferClear
-    if countdownToBufferClear.is_alive() == False:
-        countdownToBufferClear = Timer(60.0, writeToFireBase)
+    if not countdownToBufferClear.is_alive():
+        countdownToBufferClear = Timer(BUFFER_TIME, writeToFireBase)
         countdownToBufferClear.start()
-    now = datetime.now()
+
     req_body = request.get_json()
-    nowInSeconds = round((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+
+    # If gps sent date and time, convert it to timestamp to add as a field.
+    if 'gps_date' in req_body and 'gps_time' in req_body:
+        raw_date = req_body['gps_date']  # Format ddmmyy.
+        raw_time = req_body['gps_time'][0:6]  # Format hhmmsscc.
+        req_body['gps_dt'] = datetime.strptime(raw_date + raw_time, '%d%m%y%H%M%S')
+    else:
+        req_body['gps_dt'] = datetime.fromtimestamp(0)
+
+    label_dt = datetime.now()
+
+    sec_of_day = round((label_dt - label_dt.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+    print(sec_of_day)
+
+    timestampStr = label_dt.strftime("%Y-%m-%d")
     if not COL_TELEMETRY.document(timestampStr).get().exists:
-        create()
-    collections = COL_TELEMETRY.document(timestampStr).collections()
+        create(label_dt)
+    collections = getOrderedCollections(timestampStr)
+
     try:
-        buffer[nowInSeconds] = {}
+        buffer[sec_of_day] = {}
         lastRead["timestamp"] = int(time())
         for col, sensor in zip(collections, SENSORS):
             if sensor in req_body.keys():
-                buffer[nowInSeconds][sensor] = req_body[sensor]
+                buffer[sec_of_day][sensor] = req_body[sensor]
                 lastRead[sensor] = req_body[sensor]
-        if len(buffer) > (15*12) : #check buffer size and if it is greater than threshold
+        if len(buffer) > (15*12):  # Check buffer size and if it is greater than threshold.
             writeToFireBase()
             countdownToBufferClear.cancel()
             buffer.clear()
             return "Success, buffer limit reached but data uploaded, buffer cleared", 202
         return "Success, data added to buffer", 202
     except Exception as e:
+        reporting_client.report_exception()
+
         countdownToBufferClear.cancel()
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -150,12 +179,17 @@ def read(date):
                 data[str(col.id)] = doc.to_dict()
         return jsonify(data), 200
     except Exception as e:
+        reporting_client.report_exception()
         return f"An Error Occured: {e}", 404
 
 
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+
+def getOrderedCollections(timestampStr):
+    return sorted(list(COL_TELEMETRY.document(timestampStr).collections()), key=lambda x: x.id)
 
 ### Realtime ##################################################################
 
@@ -164,7 +198,8 @@ def realtime():
     nav_list = NAV_LIST
     nav = "realtime"
     no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
-        'keys': ["gps_time",
+        'keys': ["gps_dt",
+                 "gps_course",
                  "gps_lon",
                  "gps_lat",
                  "gps_velocity_east",
@@ -174,7 +209,8 @@ def realtime():
     return render_template('realtime.html',
                            nav_list=nav_list,
                            nav=nav,
-                           maps_url=key,
+                           maps_url=keys.google_maps_key,
+						   mapbox_key=keys.mapbox_key,
                            format=db_format,
                            no_chart=no_chart_keys)
 
@@ -191,7 +227,9 @@ def recentData():
             data[sensor] = lastRead[sensor]
         return jsonify(data), 200
     except Exception as e:
+        reporting_client.report_exception()
         return f"An Error Occured: {e}", 404
+
 
 # Get random test data to display on the realtime page
 @app.route('/realtime/dummy', methods=['GET'])
@@ -218,17 +256,33 @@ def data():
 @app.route('/daily', methods=['GET'])
 def daily():
     nav_list = NAV_LIST
-    nav = "daily"
+    list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
     # Check if valid date was provided as GET parameter, default to today (at midnight) if not
+    #try:
+        #date = datetime.strptime(request.args.get('date', default=""), '%Y-%m-%d')
+    #except ValueError:
+        #date = datetime.combine(datetime.today(), datetime.min.time())
+
     try:
         date = datetime.strptime(request.args.get('date', default=""), '%Y-%m-%d')
-    except ValueError:
-        date = datetime.combine(datetime.today(), datetime.min.time())
+    except ValueError or IndexError:
+        date = datetime.strptime(list_of_days[-1], '%Y-%m-%d')
 
     # Formatted date strings when rendering page and buttons to other dates
+    #date_str = date.strftime('%Y-%m-%d')
+    #prev_date_str = (date-timedelta(days=1)).strftime('%Y-%m-%d')
+    #next_date_str = (date+timedelta(days=1)).strftime('%Y-%m-%d')
     date_str = date.strftime('%Y-%m-%d')
-    prev_date_str = (date-timedelta(days=1)).strftime('%Y-%m-%d')
-    next_date_str = (date+timedelta(days=1)).strftime('%Y-%m-%d')
+
+    for day in list_of_days:
+        if date_str <= day:
+            prev_date_str = list_of_days[list_of_days.index(day)-1]
+            next_date_str = list_of_days[(list_of_days.index(day)+1)%len(list_of_days)]
+            break
+
+    else:
+        prev_date_str = list_of_days[-1]
+        next_date_str = list_of_days[0]
 
     tab_list = client_format.keys()
 
@@ -243,7 +297,7 @@ def daily():
 
     if tab == "Location":  # Location tab uses separate template to display map
         # URL to initialize Google Maps API, to be injected into HTML. Key: value is from local google_maps_key.py file.
-        maps_url = key
+        maps_url = keys.google_maps_key
 
         # Check if valid times were provided as GET parameter, default to all day if not
         try:
@@ -287,29 +341,52 @@ def daily():
         return render_template('daily_location.html', **locals())
     else:
         # Loop through every sensor the current tab should show a reading for
+        #print(client_format[tab]["lines"])
         for sensor_id in client_format[tab]["lines"]:
-
             # Find the info about the sensor
+            if sensor_id not in db_format: continue
             sensor = db_format[sensor_id]
+            #print(sensor, sensor_id)
 
             # Ensure the sensor is in the database
-            if sensor is not None and "name" in sensor:
+            if sensor is not None and "name" in sensor.keys():
                 graph_data[sensor["name"]] = OrderedDict()
 
                 # Loop through all the sensor readings for the day being viewed
-                db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).stream()
-                try:
-                    readings = next(db_data).to_dict()["seconds"] # The map within the sensor's document
-                except StopIteration:
-                    continue  # Skip sensors not in database
-                except KeyError:
-                    continue
+##              db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).stream()
+
+
+                # Creates dictionary with all the data within the specific sensor_id, will be a NoneType of the date_str is not in the database
+                db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).document("0").get().to_dict()
+                #list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
+                
+##                try:
+##                    readings = next(db_data).to_dict()["seconds"] # The map within the sensor's document
+##
+##                    readings 
+##                except StopIteration:
+##                    continue  # Skip sensors not in database
+##                except KeyError:
+##                    continue
 
                 # Convert keys from strings to ints and sort (conversion required for sort to be correct)
-                sorted_readings = sorted({int(k) : v for k, v in readings.items()}.items())
 
-                # Convert the sorted list of tuples into two separate lists using zip
-                times, readings = zip(*sorted_readings)
+##              sorted_readings = sorted({int(k) : v for k, v in readings.items()}.items())
+
+                #Tries to sort the entries, checks if there is a NoneType. If so, will assign empty lists to times and readings
+                try:
+                    sorted_readings = sorted({int(k) : v for k, v in db_data.items()}.items())
+
+                    # Convert the sorted list of tuples into two separate lists using zip
+                    times, readings = zip(*sorted_readings)
+
+                except AttributeError:
+                    times, readings = [], []
+
+                except ValueError:
+                    times, readings = [], []
+
+                #times, readings = zip(*sorted_readings)
 
                 # Downsample data if needed
                 if len(readings) > MAX_POINTS:
@@ -347,6 +424,7 @@ def min_max_downsample(x, y, num_bins):
 
     return x_view[r_index, c_index], y_view[r_index, c_index]
 
+
 # Generate a day of fake data and store in Firebase for testing
 @app.route('/generate-dummy-data', methods=['GET'])
 def dummy():
@@ -362,21 +440,21 @@ def dummy():
     try:
         readings = next(db_data)
         return "Date already has data"
-    except StopIteration: # This means its safe to generate data (without overwriting)
+    except StopIteration:  # This means its safe to generate data (without overwriting)
         pass
 
-    TEST_SENSORS = \
+    test_sensors = \
         {"battery_voltage": [300, 400], "battery_current": [200, 500], "bms_fault": [0, 1], "battery_level": [60, 70]}
     date_doc = db.collection(DATABASE_COLLECTION).document(date_str)
 
-    for sensor, rand_range in TEST_SENSORS.items():
+    for sensor, rand_range in test_sensors.items():
         dummy_data = {"seconds": {}}
         for i in range(0, 86400, 5):
             dummy_data["seconds"][str(i)] = randint(rand_range[0], rand_range[1])
         date_doc.collection(sensor).document("0").set(dummy_data, merge=True)
-        #print(dummy_data)
 
     return "OK"
+
 
 ### Longterm ##################################################################
 
@@ -385,6 +463,7 @@ def longterm():
     nav_list = NAV_LIST
     nav = "longterm"
     return render_template('longterm.html', **locals())
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)

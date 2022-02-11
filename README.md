@@ -2,10 +2,11 @@
 Pit-side client software to allow the user to navigate though historical and real time telemetry data from the car. Maintains an internal buffer of recent data and archives to Firebase Cloud Firestore. Developed using Flask and designed to be deployed to Google Cloud App Engine.
 
 ## Setup and deployment
+Automated build deployment is enabled for the `master` branch, so pushing to `master` deploys the code to production. _Exception_: If the `oursecrets` folder is changed you have to run local deployment to see those changes on the server. Follow the instructions below to push from your local.
 
 ### Prerequisites
-The root folder needs to have `google_maps_key.py`, `headerKey.json`, and `ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
-files with the necessary contents.
+The root folder needs to have `ourSecrets/__init__.py`, `ourSecrets/keys.py`, `ourSecrets/ku-solar-car-b87af-eccda8dd87e0.json`, and `ourSecrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
+files with the necessary contents. You can download them from Slack.
 
 ### Google Cloud setup
 [Link to Medium article on deploying](https://medium.com/@dmahugh_70618/deploying-a-flask-app-to-google-app-engine-faa883b5ffab)
@@ -46,9 +47,6 @@ Data will come from [TelemetrySource](https://github.com/KU-Solar-Car/TelemetryS
         "gps_time": 400,
         "gps_lat": 400,
         "gps_lon": 400,
-        "gps_velocity_east":400,
-        "gps_velocity_north": 400,
-        "gps_velocity_up": 400,
         "gps_speed": 400,
         "solar_voltage": 400,
         "solar_current": 400,

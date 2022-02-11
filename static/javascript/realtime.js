@@ -8,7 +8,7 @@ window.chartColors = {
 	grey: 'rgb(201, 203, 207)'
 };
 
-const MAX_DATAPOINTS = 10;
+const MAX_DATAPOINTS = 40;
 
 let color = Chart.helpers.color;
 
@@ -127,22 +127,18 @@ setInterval(checkForData, 500);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-    const http = new XMLHttpRequest();
-    http.open("GET", "realtime/dummy?ts=" + Date.now());
-    http.send();
-
-    http.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            let data = JSON.parse(http.responseText);
-            for (let key in data) {
+	fetch("realtime/data?ts=" + Date.now())
+		.then(response => response.json())
+		.then(data => {
+			for (let key in data) {
                 for (let chart of charts) {
                     if (chart.canvas.id.split("-")[1] === key) {
-                        updateChart(chart, [{x: 1000*parseInt(data["timestamp"]), y: parseInt(data[key])}]);
+                        updateChart(chart, [{x: 1000*parseInt(data["timestamp"]), y: parseFloat(data[key])}]);
                     }
                 }
             }
-        }
-    };
+			updateMap(data); // In realtime_map.js
+		});
 }
 
 
@@ -188,7 +184,9 @@ function updateHead(chart) {
     header.innerText = latest_val;
 
     let card_header = header.parentNode;
-    let unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
+    let unsafe_val = false;
+    if (db_format[data_key]["safe_max"] != null && db_format[data_key]["safe_min"] != null)
+        unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
     card_header.classList.toggle('bg-danger', unsafe_val);
     card_header.classList.toggle('text-white', unsafe_val);
 }

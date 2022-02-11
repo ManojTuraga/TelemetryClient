@@ -7,7 +7,7 @@
 	},
 	"Location": {},
 	"Speed": {
-		"lines": ["motor_speed", "gps_speed", "gps_velocity_east", "gps_velocity_north", "gps_velocity_up"]
+		"lines": ["motor_speed", "gps_speed"]
 	},
 	"Temperatures": {
 		"lines": ["battery_temperature"]
