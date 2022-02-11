@@ -2,7 +2,7 @@
 Pit-side client software to allow the user to navigate though historical and real time telemetry data from the car. Maintains an internal buffer of recent data and archives to Firebase Cloud Firestore. Developed using Flask and designed to be deployed to Google Cloud App Engine.
 
 ## Setup and deployment
-Automated build deployment is enabled for the `master` branch, so pushing to `master` deploys the code to production. Follow the instructions below to push from your local.
+Automated build deployment is enabled for the `master` branch, so pushing to `master` deploys the code to production. _Exception_: If the `oursecrets` folder is changed you have to run local deployment to see those changes on the server. Follow the instructions below to push from your local.
 
 ### Prerequisites
 The root folder needs to have `ourSecrets/__init__.py`, `ourSecrets/keys.py`, `ourSecrets/ku-solar-car-b87af-eccda8dd87e0.json`, and `ourSecrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
