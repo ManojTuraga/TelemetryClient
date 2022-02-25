@@ -22,7 +22,7 @@ from google.cloud import error_reporting
 from ourSecrets import keys
 
 MAX_POINTS = 500  # Downsample data to this many points if there are more
-BUFFER_TIME = 60.0  # Send data every 60 seconds.
+BUFFER_TIME = 60  # Send data every 60 seconds.
 
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
@@ -43,8 +43,8 @@ lastRead = dict()
 
 app = Flask(__name__, static_url_path='/static')
 
-SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_course", "gps_dt", "gps_lat",
-           "gps_lon", "gps_speed", "motor_speed", "solar_current", "solar_voltage"]
+# SENSORS = ["battery_current", "battery_temperature", "battery_voltage", "bms_fault", "gps_course", "gps_dt",
+# "gps_lat", "gps_lon", "gps_speed", "motor_speed", "solar_current", "solar_voltage"]
 
 NAV_LIST = ["realtime", "daily", "longterm"]
 
@@ -65,13 +65,16 @@ def writeToFireBase():
 
     try:
         collections = getOrderedCollections(timestampStr)
-        for col, sensor in zip(collections, SENSORS):
-            for sec in buffer.keys():
-                if sensor in buffer[sec]:
-                    data_per_timeframe = buffer[sec][sensor]
-                    col.document("0").update({
-                        str(sec): data_per_timeframe
-                    })
+        for sec in buffer.keys():
+            for field in buffer[sec]:
+                if field not in [c.id for c in collections]:
+                    create_field_collection(datetime.now(), field)
+
+                data_per_timeframe = buffer[sec][field]
+                COL_TELEMETRY.document(timestampStr).collection(field).document("0").update({
+                    str(sec): data_per_timeframe
+                })
+
         buffer.clear()
         print("Buffer clear")
     except Exception as e:
@@ -86,24 +89,32 @@ def writeToFireBase():
 countdownToBufferClear = Timer(BUFFER_TIME, writeToFireBase)
 
 
-def create(doc_datetime):
+def create_day_doc(doc_datetime):
     """
-        create() : Add document to Firestore collection with request body
-        Ensure you pass a custom ID as part of json body in post request
-        e.g. json={'id': '1', 'title': 'Write a blog post'}
+    Add document for a certain day to Firestore collection given a datetime.
+    :param doc_datetime: Datetime
+    :return:
     """
     timestampStr = doc_datetime.strftime("%Y-%m-%d")
 
     if not COL_TELEMETRY.document(timestampStr).get().exists:
         try:
             COL_TELEMETRY.document(timestampStr).set({"Date": timestampStr})
-            for sensor in SENSORS:
-                COL_TELEMETRY.document(timestampStr).collection(sensor).document("0").set({})
             return "Documents Created", 201
         except Exception as e:
             reporting_client.report_exception()
             return f"An Error Occured: {e}", 400
     return "Document already exists", 200
+
+
+def create_field_collection(day_dt, field_name):
+    """
+    Add collection under a given day in firestore for a given field.
+    :param day_dt: Datetime
+    :param field_name: String
+    :return: None
+    """
+    COL_TELEMETRY.document(day_dt.strftime("%Y-%m-%d")).collection(field_name).document("0").set({})
 
 
 @app.route('/car', methods=['POST'])
@@ -133,16 +144,16 @@ def fromCar():
 
     timestampStr = label_dt.strftime("%Y-%m-%d")
     if not COL_TELEMETRY.document(timestampStr).get().exists:
-        create(label_dt)
+        create_day_doc(label_dt)  # Create document for day if it doesn't exist.
     collections = getOrderedCollections(timestampStr)
 
     try:
         buffer[sec_of_day] = {}
         lastRead["timestamp"] = int(time())
-        for col, sensor in zip(collections, SENSORS):
-            if sensor in req_body.keys():
-                buffer[sec_of_day][sensor] = req_body[sensor]
-                lastRead[sensor] = req_body[sensor]
+        for sensor in req_body.keys():
+            buffer[sec_of_day][sensor] = req_body[sensor]
+            lastRead[sensor] = req_body[sensor]
+
         if len(buffer) > (15*12):  # Check buffer size and if it is greater than threshold.
             writeToFireBase()
             countdownToBufferClear.cancel()
