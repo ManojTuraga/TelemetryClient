@@ -125,8 +125,6 @@ def fromCar():
         raw_date = req_body['gps_date']  # Format ddmmyy.
         raw_time = req_body['gps_time'][0:6]  # Format hhmmsscc.
         req_body['gps_dt'] = datetime.strptime(raw_date + raw_time, '%d%m%y%H%M%S')
-    else:
-        req_body['gps_dt'] = datetime.fromtimestamp(0)
 
     label_dt = datetime.now()
 
