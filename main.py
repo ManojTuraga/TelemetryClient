@@ -19,7 +19,7 @@ from flask import Flask, render_template, jsonify, request
 from google.cloud import error_reporting
 
 # each key is just a string variable
-from secrets import keys
+from ourSecrets import keys
 
 MAX_POINTS = 500  # Downsample data to this many points if there are more
 BUFFER_TIME = 60.0  # Send data every 60 seconds.
@@ -28,9 +28,9 @@ CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
 
-FIREBASE_SERVICE_ACCT_FILE = "secrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
+FIREBASE_SERVICE_ACCT_FILE = "ourSecrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/ku-solar-car-b87af-eccda8dd87e0.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "ourSecrets/ku-solar-car-b87af-eccda8dd87e0.json"
 reporting_client = error_reporting.Client()
 
 cred = credentials.Certificate(FIREBASE_SERVICE_ACCT_FILE)
@@ -359,11 +359,11 @@ def daily():
                 # Creates dictionary with all the data within the specific sensor_id, will be a NoneType of the date_str is not in the database
                 db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).document("0").get().to_dict()
                 #list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
-                
+
 ##                try:
 ##                    readings = next(db_data).to_dict()["seconds"] # The map within the sensor's document
 ##
-##                    readings 
+##                    readings
 ##                except StopIteration:
 ##                    continue  # Skip sensors not in database
 ##                except KeyError:
