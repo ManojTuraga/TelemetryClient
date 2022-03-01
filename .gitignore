@@ -140,6 +140,7 @@ cython_debug/
 .idea/
 
 # Solar Car stuff
+ourSecrets/*
 secrets/*
 google_maps_key.py
 ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json
