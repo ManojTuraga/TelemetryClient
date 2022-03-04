@@ -330,7 +330,13 @@ def daily():
 
         lat_reading_list = \
             sorted({int(k): v for k, v in lat_reading_dict.items() if starttime <= int(k) <= endtime}.items())
-        sec_list, lat_list = zip(*lat_reading_list)
+
+        if len(lat_reading_list) != 0:
+            sec_list, lat_list = zip(*lat_reading_list)
+
+        else:
+            sec_list = []
+            lat_list = []
 
         # Get list of longitudes in the same manner
         lon_gen = db.collection(DATABASE_COLLECTION).document(date_str).collection('gps_lon').stream()
@@ -343,7 +349,13 @@ def daily():
 
         lon_reading_list = \
             sorted({int(k): v for k, v in lon_reading_dict.items() if starttime <= int(k) <= endtime}.items())
-        sec_list, lon_list = zip(*lon_reading_list)
+
+        if len(lat_reading_list) != 0:
+            sec_list, lon_list = zip(*lon_reading_list)
+
+        else:
+            sec_list = []
+            lon_list = []
 
         location_pairs = list(zip(lat_list, lon_list))  # [(lat0, lon0), (lat1, lon1), ...]
 
