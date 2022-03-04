@@ -32,24 +32,23 @@ L.control.layers(baseLayers, {"Car path": path}).addTo(map); // User controls in
 let coords = [];
 
 function updateMap(data) {
-	console.log(data);
 	if ("gps_lat" in data && "gps_lon" in data) {
 		console.log(coords);
 		if (coords.length >= 1 && coords[coords.length-1][3] == data["gps_dt"]) return;
 		coords.push([data["gps_lat"], data["gps_lon"], data["gps_speed"], data["gps_dt"]]);
 		if (coords.length > MAX_DATAPOINTS) coords.splice(0, 1);
-		
+
 		path.clearLayers();
 		for (var i = 1; i < coords.length; i++) {
 			// 0 mph = blue, 30 mph = green, 60 mph = red
 			let hue = 240 - coords[i][2] * 4;
 			L.polyline([coords[i-1].slice(0, 2), coords[i].slice(0, 2)], {"color": "hsl(" + hue + ", 100%, 50%)"}).addTo(path);
 		}
-		
+
 		if (document.getElementById("map-follow").checked) {
 			map.fitBounds(path.getBounds()); // Zoom map to lines
 		}
-		
+
 		document.getElementById("head-map").innerText = data["gps_lat"] + ", " + data["gps_lon"];
 	}
 }
