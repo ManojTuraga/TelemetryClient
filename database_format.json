@@ -132,7 +132,7 @@
 		"safe_max": null,
 		"safe_min": null
 	},
-	"gps_long": {
+	"gps_lon": {
 		"category": "gps",
 		"name": "Longitude",
 		"unit": " degrees",
