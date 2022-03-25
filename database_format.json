@@ -1,76 +1,147 @@
 {
-	"battery_voltage": {
+	"pack_voltage": {
 		"category": "bms",
-		"name": "Battery Voltage",
+		"name": "Pack Voltage",
 		"unit": " V",
 		"safe_max": 2,
 		"safe_min": 0
 	},
-	"battery_current": {
+	"pack_soc": {
 		"category": "bms",
-		"name": "Output Current",
+		"name": " Charge Percentage of Pack",
+		"unit": " %",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"pack_current": {
+		"category": "bms",
+		"name": "Pack Current",
 		"unit": " A",
 		"safe_max": 100,
 		"safe_min": 0
 	},
-	"battery_temperature": {
+	"min_pack_temp": {
 		"category": "bms",
-		"name": "Battery Temperature",
+		"name": "Min Pack Temp",
 		"unit": " degrees",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"avg_pack_temp": {
+		"category": "bms",
+		"name": "Average Pack Temp",
+		"unit": " degrees",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"max_pack_temp": {
+		"category": "bms",
+		"name": "Max Pack Temp",
+		"unit": " degrees",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"min_cell_voltage": {
+		"category": "bms",
+		"name": "Min Cell Voltage",
+		"unit": " V",
+		"safe_max": 5,
+		"safe_min": 0
+	},
+	"input_voltage": {
+		"category": "bms",
+		"name": "Input Voltage",
+		"unit": " V",
+		"safe_max": 20,
+		"safe_min": 0
+	},
+	"avg_cell_resistance": {
+		"category": "bms",
+		"name": "Average Cell Resistance",
+		"unit": " mOhms",
 		"safe_max": 100,
 		"safe_min": 0
 	},
 	"bms_fault": {
 		"category": "bms",
-		"name": "Isolation Fault Sensor",
-		"safe_max": 0,
+		"name": "bms Fault",
+		"unit": "",
+		"safe_max": 2000000000,
 		"safe_min": 0
+	},
+	"motor_speed": {
+		"category": "motor",
+		"name": "Motor Speed",
+		"unit": " mph",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"motor_current": {
+		"category": "motor",
+		"name": "Motor Current",
+		"unit": " A",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"motor_controller_temp": {
+		"category": "motor",
+		"name": "Motor Controller Temp",
+		"unit": " degrees",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"motor_temp": {
+		"category": "motor",
+		"name": "Motor Temp",
+		"unit": " degrees",
+		"safe_max": 100,
+		"safe_min": 0
+	},
+	"motor_fault": {
+		"category": "motor",
+		"name": "Motor Fault",
+		"unit": "",
+		"safe_max": 2000000000,
+		"safe_min": 0
+	},
+	"solar_voltage": {
+		"category": "solar",
+		"name": "Solar Voltage",
+		"unit": " V",
+		"safe_max": 2,
+		"safe_min": 0
+	},
+	"solar_fault": {
+		"category": "solar",
+		"name": "Solar Fault",
+		"unit": "",
+		"safe_max": 2000000000,
+		"safe_min": 0
+	},
+	"gps_course": {
+		"category": "gps",
+		"name": "Car Course (via gps)",
+		"unit": " degrees",
+		"safe_max": 0,
+		"safe_min": 360
 	},
 	"gps_lat": {
 		"category": "gps",
 		"name": "Latitude",
-		"unit": " degrees;",
+		"unit": " degrees",
 		"safe_max": null,
 		"safe_min": null
 	},
 	"gps_lon": {
 		"category": "gps",
 		"name": "Longitude",
-		"unit": " degrees;",
+		"unit": " degrees",
 		"safe_max": null,
 		"safe_min": null
 	},
 	"gps_speed": {
 		"category": "gps",
-		"name": "Car speed (via GPS)",
-		"unit": " mph",
-		"safe_max": 100,
-		"safe_min": 0
-	},
-	"gps_course": {
-		"category": "gps",
-		"name": "Car course (via GPS)",
-		"unit": " degrees",
-		"safe_min": null,
-		"safe_max": null
-	},
-	"solar_voltage": {
-		"category": "mppt",
-		"name": "Input voltage (from solar)",
-		"unit": " V",
-		"safe_max": 100,
-		"safe_min": 0
-	},
-	"solar_current": {
-		"category": "mppt",
-		"name": "Input current (from solar)",
-		"unit": " A",
-		"safe_max": 100,
-		"safe_min": 0
-	},
-	"motor_speed": {
-		"category": "motor",
-		"name": "Car speed (via motor controller)",
+		"name": "Speed of Car",
 		"unit": " mph",
 		"safe_max": 100,
 		"safe_min": 0

@@ -1,15 +1,15 @@
 {
 	"Battery": {
-		"lines": ["battery_voltage", "battery_current", "bms_fault"]
+		"lines": ["pack_voltage", "pack_soc", "pack_current", "min_cell_voltage", "input_voltage", "avg_cell_resistance", "bms_fault"]
 	},
 	"Solar": {
-		"lines": ["solar_voltage", "solar_current"]
+		"lines": ["solar_voltage", "solar_fault"]
 	},
 	"Location": {},
 	"Speed": {
 		"lines": ["motor_speed", "gps_speed"]
 	},
 	"Temperatures": {
-		"lines": ["battery_temperature"]
+		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
 	}
 }

@@ -53,6 +53,18 @@ function showChart(id) {
     $('#card-body-wrap-' + id).collapse('show')
 }
 
+
+// Move the selected chart to the front of the list.
+
+
+function pinChart(id){
+    let cha = document.getElementById('container-' + id);
+    let tes = cha.parentNode;
+    let fir = tes.firstChild;
+    tes.insertBefore(cha, fir);
+
+}
+
 // Canvases hold contexts. Charts are created by passing a context and a config dict.
 let canvases = Array.from(document.getElementsByClassName("can"));
 let contexts = canvases.map(x => {
