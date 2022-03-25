@@ -248,13 +248,10 @@ def data():
                    battery_temperature=randint(80, 120),
                    bms_fault=choices([0, 1], weights=[.9, .1])[0],
                    gps_time=int(time()),
-				   timestamp=int(time()), # seconds since epoch
+                   timestamp=int(time()), # seconds since epoch
                    gps_lat=None,
                    gps_lon=None,
-                   gps_velocity_east=None,
-                   gps_velocity_north=None,
-                   gps_velocity_up=None,
-                   gps_speed=None,
+                   gps_speed=randint(30, 40),
                    solar_voltage=randint(0, 5),
                    solar_current=randint(15, 30),
                    motor_speed=randint(15, 30))

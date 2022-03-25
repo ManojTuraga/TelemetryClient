@@ -107,6 +107,7 @@ let charts = contexts.map(x => new Chart(x, {
 
 
 initialHide();
+initialScale();
 checkForData();
 setInterval(checkForData, 500);
 
@@ -115,7 +116,7 @@ setInterval(checkForData, 500);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("realtime/data?ts=" + Date.now())
+	fetch("realtime/dummy")
 		.then(response => response.json())
 		.then(data => {
 			for (let key in data) {
@@ -130,11 +131,25 @@ function checkForData() {
 }
 
 
+function getChartName(chart) {
+    return chart.canvas.id.split("-")[1];
+}
+
 function initialHide() {
     for (let chart of charts) {
         let parsed_id = chart.canvas.id.split("-")[1];
         let show = window.localStorage.getItem('opt-' + parsed_id);
         if (show == 0) hideChart(parsed_id);
+    }
+}
+
+function initialScale() {
+    for (let chart of charts) {
+        let name = getChartName(chart);
+        let info = db_format[name];
+
+        chart.config.options.scales.yAxes[0].ticks.suggestedMax = info["safe_max"];
+        chart.config.options.scales.yAxes[0].ticks.suggestedMin = info["safe_min"];
     }
 }
 
@@ -166,7 +181,7 @@ Called from updateChart().
  */
 function updateHead(chart) {
     let latest_val = chart.config.data.datasets[0].data[chart.config.data.datasets[0].data.length-1].y;
-    let data_key = chart.canvas.id.split("-")[1];
+    let data_key = getChartName(chart);
     let head_key = "head-" + data_key;
     let header = document.getElementById(head_key);
     header.innerText = latest_val;
