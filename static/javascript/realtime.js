@@ -116,7 +116,7 @@ setInterval(checkForData, 500);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("realtime/dummy")
+	fetch("realtime/data")
 		.then(response => response.json())
 		.then(data => {
 			for (let key in data) {
