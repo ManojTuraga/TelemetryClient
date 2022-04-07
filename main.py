@@ -27,6 +27,7 @@ BUFFER_TIME = 60  # Send data every 60 seconds.
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
+REALTIME_FORMAT_FILE = "realtime_format.json"
 
 FIREBASE_SERVICE_ACCT_FILE = "ourSecrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
 
@@ -55,6 +56,9 @@ with open(CLIENT_FORMAT_FILE) as file_handle:
 # Specifies information about each sensor in the database
 with open(DATABASE_FORMAT_FILE) as file_handle:
     db_format = json.load(file_handle)
+
+with open(REALTIME_FORMAT_FILE) as file_handle:
+    rt_format = json.load(file_handle)
 
 
 def writeToFireBase():
@@ -206,6 +210,18 @@ def getOrderedCollections(timestampStr):
 def realtime():
     nav_list = NAV_LIST
     nav = "realtime"
+    sensor_info = {}
+
+    for category in ["Battery", "Solar", "Speed", "Temperatures"]:
+        for sensor_id in rt_format[category]["lines"]:
+            if not category in sensor_info.keys():
+                sensor_info[category] = [(sensor_id, db_format[sensor_id])]
+
+            else:
+                sensor_info[category] += [(sensor_id, db_format[sensor_id])]
+
+    print(sensor_info)
+    
     no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
         'keys': ["gps_dt",
                  "gps_course",
@@ -220,7 +236,7 @@ def realtime():
                            nav=nav,
                            maps_url=keys.google_maps_key,
 						   mapbox_key=keys.mapbox_key,
-                           format=db_format,
+                           format=sensor_info,
                            no_chart=no_chart_keys)
 
 
@@ -248,10 +264,13 @@ def data():
                    battery_temperature=randint(80, 120),
                    bms_fault=choices([0, 1], weights=[.9, .1])[0],
                    gps_time=int(time()),
-                   timestamp=int(time()), # seconds since epoch
+				   timestamp=int(time()), # seconds since epoch
                    gps_lat=None,
                    gps_lon=None,
-                   gps_speed=randint(30, 40),
+                   gps_velocity_east=None,
+                   gps_velocity_north=None,
+                   gps_velocity_up=None,
+                   gps_speed=None,
                    solar_voltage=randint(0, 5),
                    solar_current=randint(15, 30),
                    motor_speed=randint(15, 30))
@@ -364,7 +383,6 @@ def daily():
             # Find the info about the sensor
             if sensor_id not in db_format: continue
             sensor = db_format[sensor_id]
-            #print(sensor, sensor_id)
 
             # Ensure the sensor is in the database
             if sensor is not None and "name" in sensor.keys():
@@ -413,6 +431,8 @@ def daily():
                 for time, reading in zip(times, readings):
                     unix = int(date.timestamp() + time)*1000
                     graph_data[sensor["name"]][unix] = reading
+
+                print(graph_data)
 
         return render_template('daily.html', **locals())
 
