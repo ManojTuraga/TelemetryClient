@@ -70,37 +70,46 @@ let canvases = Array.from(document.getElementsByClassName("can"));
 let contexts = canvases.map(x => {
     return x.getContext('2d')
 });
-let charts = [];
+let charts = {};
 function createGraphs()
 {
 	
 	for (let canvas of canvases)
 	{
-		let data = [];
+		let data_sets = [];
 		let data_key = db_format[canvas.id.split("-")[1]];
 		
 		for (let values of data_key)
 		{
 			console.log(values[0], values[1]);
-			data.push({
-					backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
-					borderColor: window.chartColors.blue,
+			data_sets.push({
+					backgroundColor: color(window.chartColors[values[1]["color"]]).alpha(0.5).rgbString(),
+					borderColor: window.chartColors[values[1]["color"]],
 					fill: false,
-					data: []
+					data: [],
+					name: values[1]["name"],
+					label: values[1]["name"],
+					unit: values[1]["unit"]
 				});
 		}
 		let chart = new Chart(canvas.getContext('2d'), {
 			type: 'line',
 			data: {
-				datasets: data
+				datasets: data_sets
 			},
 			options: {
 				responsive: true,
 				title: {
 					display: true,
 				},
-				legend: {
-					display: false,
+				layout: {
+					padding:
+					{
+						top: -35,
+					}
+				},
+				legend:{
+						display: true,
 				},
 				scales: {
 					xAxes: [{
@@ -130,7 +139,8 @@ function createGraphs()
 				}
 			}
 		});
-		charts.push(chart)
+		charts[canvas.id.split("-")[1]] = chart;
+		
 	}
 }
 createGraphs();
@@ -185,27 +195,28 @@ createGraphs();
 
 initialHide();
 checkForData();
-setInterval(checkForData, 500);
+setInterval(checkForData, 1000);
 
 
 /*
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("realtime/data?ts=" + Date.now())
+	fetch("/realtime/dummy?ts=" + Date.now())
 		.then(response => response.json())
 		.then(data => {
-			data.min_cell_voltage = 3;
+			//data.min_cell_voltage = 3;
+			//data.timestamp = Date.now()
 			for (let key in data) {
-				for (let canvas of canvases)
+				for (let chart_id in charts)
 				{
-					let data_key = db_format[canvas.id.split("-")[1]];
+					let data_key = db_format[chart_id];
 					
 					for (const [i, category] of data_key.entries())
 					{
 						if (category[0] == key)
 						{
-							updateChart(Chart.getChart(canvas.id), [{x: 1000*parseInt(data["timestamp"]), y: parseFloat(data[key])}], i);
+							updateChart(charts[chart_id], {x: 1000*parseInt(data["timestamp"]), y: parseFloat(data[key])}, i);
 						}
 					}
 				}
@@ -221,8 +232,8 @@ function checkForData() {
 
 
 function initialHide() {
-    for (let chart of charts) {
-        let parsed_id = chart.canvas.id.split("-")[1];
+    for (let chart in charts) {
+        let parsed_id = chart;
         let show = window.localStorage.getItem('opt-' + parsed_id);
         if (show == 0) hideChart(parsed_id);
     }
@@ -232,20 +243,20 @@ function initialHide() {
 
 /*
 Updates chart with values with new values(s) in new_data
-new_data format: [{x:1618916940000, y:42}, ...]
+datapoint format: {x:1618916940000, y:42}
 x is unix timestamp, y is sensor reading
  */
-function updateChart(chart, new_data, i) {
+function updateChart(chart, datapoint, i) {
 	let data = chart.config.data.datasets[i].data;
-	for (let datapoint of new_data) {
+	chart.config.data.datasets[i].label = chart.config.data.datasets[i].name + ' (' + datapoint.y + chart.config.data.datasets[i].unit + ')';
+	console.log(data)
 		// Prevent duplicate datapoints for same time
 		if (data.length < 1 || datapoint.x != data[data.length-1].x) {
 			data.push(datapoint);
 			if (data.length > MAX_DATAPOINTS) data.splice(0, 1);
 		}
-    }
 	chart.update();
-	updateHead(chart)
+	//updateHead(chart)
 }
 
 
