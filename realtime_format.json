@@ -1,15 +1,40 @@
 {
-	"Battery": {
-		"lines": ["pack_voltage", "pack_soc", "pack_current", "min_cell_voltage", "input_voltage", "avg_cell_resistance", "bms_fault"]
+	"Pack Voltage": {
+		"lines": ["pack_voltage"]
 	},
-	"Solar": {
-		"lines": ["solar_voltage", "solar_fault"]
+	"Pack State of Charge": {
+		"lines": ["pack_soc"]
 	},
-	"Location": {},
+	"Pack Current": {
+		"lines": ["pack_current"]
+	},
+	"Pack Temperature": {
+		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
+	},
+	"Cell Voltage": {
+		"lines": ["min_cell_voltage", "avg_cell_voltage", "max_cell_voltage"]
+	},
+	"Pack Temperature": {
+		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
+	},
+	"Input Voltage": {
+		"lines": ["input_voltage"]
+	},
+	"Pack Temperature": {
+		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
+	},
 	"Speed": {
 		"lines": ["motor_speed", "gps_speed"]
 	},
-	"Temperatures": {
-		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
+	"Motor Current": {
+		"lines": ["motor_current"]
+	},
+	"Motor Temperature": {
+		"lines": ["motor_temp"]
+	},
+	"Solar Voltage": {
+		"lines": ["solar_voltage"]
 	}
+	
+
 }

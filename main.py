@@ -212,15 +212,13 @@ def realtime():
     nav = "realtime"
     sensor_info = {}
 
-    for category in ["Battery", "Solar", "Speed", "Temperatures"]:
+    for category in rt_format.keys():
         for sensor_id in rt_format[category]["lines"]:
             if not category in sensor_info.keys():
                 sensor_info[category] = [(sensor_id, db_format[sensor_id])]
 
             else:
                 sensor_info[category] += [(sensor_id, db_format[sensor_id])]
-
-    print(sensor_info)
     
     no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
         'keys': ["gps_dt",
@@ -238,6 +236,17 @@ def realtime():
 						   mapbox_key=keys.mapbox_key,
                            format=sensor_info,
                            no_chart=no_chart_keys)
+
+@app.route('/realtime/dummy', methods=["GET"])
+def dummy_data():
+    test_sensors = \
+        {sensor: randint(0, 100) for category in rt_format.keys() for sensor in rt_format[category]["lines"] }
+
+    test_sensors["timestamp"] = int(time())
+
+    return jsonify(test_sensors), 200
+    
+        
 
 
 # Get real data to display on the realtime page
@@ -482,7 +491,7 @@ def dummy():
         pass
 
     test_sensors = \
-        {"battery_voltage": [300, 400], "battery_current": [200, 500], "bms_fault": [0, 1], "battery_level": [60, 70]}
+        {"pack_voltage": [300, 400], "battery_current": [200, 500], "bms_fault": [0, 1], "battery_level": [60, 70]}
     date_doc = db.collection(DATABASE_COLLECTION).document(date_str)
 
     for sensor, rand_range in test_sensors.items():
