@@ -4,6 +4,8 @@ Pit-side client software to allow the user to navigate though historical and rea
 ## Setup and deployment
 Automated build deployment is enabled for the `master` branch, so pushing to `master` deploys the code to production. _Exception_: If the `oursecrets` folder is changed you have to run local deployment to see those changes on the server. Follow the instructions below to push from your local.
 
+If adding non-vcs files (i.e. files specified in .gitignore), you probably want to add them to .gcloudignore.
+
 ### Prerequisites
 The root folder needs to have `ourSecrets/__init__.py`, `ourSecrets/keys.py`, `ourSecrets/ku-solar-car-b87af-eccda8dd87e0.json`, and `ourSecrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json`
 files with the necessary contents. You can download them from Slack.
