@@ -63,31 +63,29 @@
 			</div>
 		</div>
 
-        {% for datatype, datatype_dic in format.items() if datatype not in no_chart['keys'] %}
-            <div id="container-{{ datatype }}" class="card-container col-12 col-lg-6 m-0 p-1">
-                <div id="card-{{ datatype }}" class="card m-1">
-                    <div class="card-header" data-target="#card-body-wrap-{{ datatype }}">
+        {% for category, datatype_list in format.items() %}
+            <div id="container-{{ category }}" class="card-container col-12 col-lg-6 m-0 p-1">
+                <div id="card-{{ category }}" class="card m-1">
+                    <div class="card-header" data-target="#card-body-wrap-{{ category }}">
                         <p style="float: left; margin: 0" class="btn-link text-reset" onclick="hideChart('{{ datatype }}')">Hide</p>
-                        {{ datatype_dic['name'] | safe }}: 
+                        {{ category | safe }} 
 						            <span id="head-{{ datatype}}"></span>
-						            {{ datatype_dic['unit'] | safe }}
                         <p style="float: right; margin: 0" class="btn-link text-reset" onclick="">Pin</p>
                     </div>
-                    <div id="card-body-wrap-{{ datatype }}" class="h-100 collapse show" style="transition: height 0.01s;">
+                    <div id="card-body-wrap-{{ category }}" class="h-100 collapse show" style="transition: height 0.01s;">
                         <div class="card-body p-0">
-                            <canvas id="canvas-{{ datatype }}" class="can" style="height: 276px;"></canvas>
+                            <canvas id="canvas-{{ category }}" class="can" style="height: 276px;"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
-        {% endfor %}
+		{% endfor %}
 
     </div>
     </div>
 
     <script>
         let db_format = {{ format | tojson }};
-        let no_chart = {{ no_chart | tojson}};
 		const MAPBOX_KEY = "{{mapbox_key}}";
     </script>
     <script src="{{ url_for('static', filename='javascript/realtime.js') }}"></script>

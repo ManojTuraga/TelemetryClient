@@ -27,6 +27,7 @@ BUFFER_TIME = 60  # Send data every 60 seconds.
 CLIENT_FORMAT_FILE = "client_format.json"
 DATABASE_FORMAT_FILE = "database_format.json"
 DATABASE_COLLECTION = "telemetry"
+REALTIME_FORMAT_FILE = "realtime_format.json"
 
 FIREBASE_SERVICE_ACCT_FILE = "ourSecrets/ku-solar-car-b87af-firebase-adminsdk-ttwuy-0945c0ac44.json"
 
@@ -55,6 +56,9 @@ with open(CLIENT_FORMAT_FILE) as file_handle:
 # Specifies information about each sensor in the database
 with open(DATABASE_FORMAT_FILE) as file_handle:
     db_format = json.load(file_handle)
+
+with open(REALTIME_FORMAT_FILE) as file_handle:
+    rt_format = json.load(file_handle)
 
 
 def writeToFireBase():
@@ -206,22 +210,36 @@ def getOrderedCollections(timestampStr):
 def realtime():
     nav_list = NAV_LIST
     nav = "realtime"
-    no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
-        'keys': ["gps_dt",
-                 "gps_course",
-                 "gps_lon",
-                 "gps_lat",
-                 "gps_velocity_east",
-                 "gps_velocity_north",
-                 "gps_velocity_up"]}
+    sensor_info = {}
+
+    for category in rt_format.keys():
+        for sensor_id in rt_format[category]["lines"]:
+            if not category in sensor_info.keys():
+                sensor_info[category] = [(sensor_id, db_format[sensor_id])]
+
+            else:
+                sensor_info[category] += [(sensor_id, db_format[sensor_id])]
+    
 
     return render_template('realtime.html',
                            nav_list=nav_list,
                            nav=nav,
                            maps_url=keys.google_maps_key,
 						   mapbox_key=keys.mapbox_key,
-                           format=db_format,
-                           no_chart=no_chart_keys)
+                           format=sensor_info)
+
+
+# Get random test data to display on the realtime page
+@app.route('/realtime/dummy', methods=["GET"])
+def dummy_data():
+    test_sensors = \
+        {sensor: randint(0, 50) for category in rt_format.keys() for sensor in rt_format[category]["lines"] }
+
+    test_sensors["timestamp"] = int(time())
+
+    return jsonify(test_sensors), 200
+    
+        
 
 
 # Get real data to display on the realtime page
@@ -238,23 +256,6 @@ def recentData():
     except Exception as e:
         reporting_client.report_exception()
         return f"An Error Occured: {e}", 404
-
-
-# Get random test data to display on the realtime page
-@app.route('/realtime/dummy', methods=['GET'])
-def data():
-    return jsonify(battery_voltage=randint(0, 5),
-                   battery_current=randint(15, 30),
-                   battery_temperature=randint(80, 120),
-                   bms_fault=choices([0, 1], weights=[.9, .1])[0],
-                   gps_time=int(time()),
-                   timestamp=int(time()), # seconds since epoch
-                   gps_lat=None,
-                   gps_lon=None,
-                   gps_speed=randint(30, 40),
-                   solar_voltage=randint(0, 5),
-                   solar_current=randint(15, 30),
-                   motor_speed=randint(15, 30))
 
 
 ### Daily #####################################################################
@@ -364,7 +365,6 @@ def daily():
             # Find the info about the sensor
             if sensor_id not in db_format: continue
             sensor = db_format[sensor_id]
-            #print(sensor, sensor_id)
 
             # Ensure the sensor is in the database
             if sensor is not None and "name" in sensor.keys():
@@ -414,6 +414,8 @@ def daily():
                     unix = int(date.timestamp() + time)*1000
                     graph_data[sensor["name"]][unix] = reading
 
+                print(graph_data)
+
         return render_template('daily.html', **locals())
 
 
@@ -462,7 +464,7 @@ def dummy():
         pass
 
     test_sensors = \
-        {"battery_voltage": [300, 400], "battery_current": [200, 500], "bms_fault": [0, 1], "battery_level": [60, 70]}
+        {"pack_voltage": [300, 400], "battery_current": [200, 500], "bms_fault": [0, 1], "battery_level": [60, 70]}
     date_doc = db.collection(DATABASE_COLLECTION).document(date_str)
 
     for sensor, rand_range in test_sensors.items():

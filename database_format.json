@@ -3,57 +3,81 @@
 		"category": "bms",
 		"name": "Pack Voltage",
 		"unit": " V",
-		"safe_max": 2,
-		"safe_min": 0
+		"safe_max": 110,
+		"safe_min": 70,
+		"color": "blue"
 	},
 	"pack_soc": {
 		"category": "bms",
 		"name": " Charge Percentage of Pack",
 		"unit": " %",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"pack_current": {
 		"category": "bms",
 		"name": "Pack Current",
 		"unit": " A",
-		"safe_max": 100,
-		"safe_min": 0
+		"safe_max": 60,
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"min_pack_temp": {
 		"category": "bms",
 		"name": "Min Pack Temp",
 		"unit": " degrees",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"avg_pack_temp": {
 		"category": "bms",
 		"name": "Average Pack Temp",
 		"unit": " degrees",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "red"
 	},
 	"max_pack_temp": {
 		"category": "bms",
 		"name": "Max Pack Temp",
 		"unit": " degrees",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "orange"
 	},
 	"min_cell_voltage": {
 		"category": "bms",
 		"name": "Min Cell Voltage",
 		"unit": " V",
+		"safe_max": 4.2,
+		"safe_min": 2.8,
+		"color": "blue"
+	},
+	"avg_cell_voltage": {
+		"category": "bms",
+		"name": "Avg Cell Voltage",
+		"unit": " V",
 		"safe_max": 5,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "red"
+	},
+	"max_cell_voltage": {
+		"category": "bms",
+		"name": "Max Cell Voltage",
+		"unit": " V",
+		"safe_max": 4.2,
+		"safe_min": 2.8,
+		"color": "orange"
 	},
 	"input_voltage": {
 		"category": "bms",
 		"name": "Input Voltage",
 		"unit": " V",
 		"safe_max": 20,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"avg_cell_resistance": {
 		"category": "bms",
@@ -74,28 +98,32 @@
 		"name": "Motor Speed",
 		"unit": " mph",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"motor_current": {
 		"category": "motor",
 		"name": "Motor Current",
 		"unit": " A",
-		"safe_max": 100,
-		"safe_min": 0
+		"safe_max": 40,
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"motor_controller_temp": {
 		"category": "motor",
 		"name": "Motor Controller Temp",
 		"unit": " degrees",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "red"
 	},
 	"motor_temp": {
 		"category": "motor",
 		"name": "Motor Temp",
 		"unit": " degrees",
 		"safe_max": 100,
-		"safe_min": 0
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"motor_fault": {
 		"category": "motor",
@@ -108,8 +136,9 @@
 		"category": "solar",
 		"name": "Solar Voltage",
 		"unit": " V",
-		"safe_max": 2,
-		"safe_min": 0
+		"safe_max": 140,
+		"safe_min": 0,
+		"color": "blue"
 	},
 	"solar_fault": {
 		"category": "solar",
@@ -122,8 +151,15 @@
 		"category": "gps",
 		"name": "Car Course (via gps)",
 		"unit": " degrees",
-		"safe_max": 0,
-		"safe_min": 360
+		"safe_max": null,
+		"safe_min": null
+	},
+	"gps_time": {
+		"category": "gps",
+		"name": "Time",
+		"unit": " hhmmsscc",
+		"safe_max": null,
+		"safe_min": null
 	},
 	"gps_lat": {
 		"category": "gps",
@@ -143,7 +179,8 @@
 		"category": "gps",
 		"name": "Speed of Car",
 		"unit": " mph",
-		"safe_max": 100,
-		"safe_min": 0
+		"safe_max": 60,
+		"safe_min": 0,
+		"color": "red"
 	}
 }
