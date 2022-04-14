@@ -145,53 +145,6 @@ function createGraphs()
 }
 createGraphs();
 
-/*let charts = contexts.map(x => new Chart(x, {
-    type: 'line',
-    data: {
-        datasets: [{
-            backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
-            borderColor: window.chartColors.blue,
-            fill: false,
-            data: []
-        }]
-    },
-    options: {
-        responsive: true,
-        title: {
-            display: true,
-        },
-		legend: {
-        	display: false,
-		},
-        scales: {
-            xAxes: [{
-                type: 'time',
-                display: true,
-				offset: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Date'
-                },
-                ticks: {
-					maxRotation: 0,
-                }
-            }],
-            yAxes: [{
-                display: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Value'
-                },
-                ticks: {
-                    beginAtZero: true,
-                    min: 0,
-                    suggestedMax: 10
-                }
-            }]
-        }
-    }
-}));*/
-
 
 initialHide();
 checkForData();
@@ -202,7 +155,7 @@ setInterval(checkForData, 1000);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("/realtime/dummy?ts=" + Date.now())
+	fetch("/realtime/data?ts=" + Date.now())
 		.then(response => response.json())
 		.then(data => {
 			//data.min_cell_voltage = 3;
@@ -220,11 +173,6 @@ function checkForData() {
 						}
 					}
 				}
-                /*for (let chart of charts) {
-                    if (chart.canvas.id.split("-")[1] === key) {
-                        updateChart(chart, [{x: 1000*parseInt(data["timestamp"]), y: parseFloat(data[key])}]);
-                    }
-                }*/
             }
 			updateMap(data); // In realtime_map.js
 		});

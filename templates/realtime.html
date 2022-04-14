@@ -86,7 +86,6 @@
 
     <script>
         let db_format = {{ format | tojson }};
-        let no_chart = {{ no_chart | tojson}};
 		const MAPBOX_KEY = "{{mapbox_key}}";
     </script>
     <script src="{{ url_for('static', filename='javascript/realtime.js') }}"></script>

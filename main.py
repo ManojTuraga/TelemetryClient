@@ -220,27 +220,20 @@ def realtime():
             else:
                 sensor_info[category] += [(sensor_id, db_format[sensor_id])]
     
-    no_chart_keys = {  # Some info never needs to be graphed. Pass it as dict for JSON serialization.
-        'keys': ["gps_dt",
-                 "gps_course",
-                 "gps_lon",
-                 "gps_lat",
-                 "gps_velocity_east",
-                 "gps_velocity_north",
-                 "gps_velocity_up"]}
 
     return render_template('realtime.html',
                            nav_list=nav_list,
                            nav=nav,
                            maps_url=keys.google_maps_key,
 						   mapbox_key=keys.mapbox_key,
-                           format=sensor_info,
-                           no_chart=no_chart_keys)
+                           format=sensor_info)
 
+
+# Get random test data to display on the realtime page
 @app.route('/realtime/dummy', methods=["GET"])
 def dummy_data():
     test_sensors = \
-        {sensor: randint(0, 100) for category in rt_format.keys() for sensor in rt_format[category]["lines"] }
+        {sensor: randint(0, 50) for category in rt_format.keys() for sensor in rt_format[category]["lines"] }
 
     test_sensors["timestamp"] = int(time())
 
@@ -263,26 +256,6 @@ def recentData():
     except Exception as e:
         reporting_client.report_exception()
         return f"An Error Occured: {e}", 404
-
-
-# Get random test data to display on the realtime page
-@app.route('/realtime/dummy', methods=['GET'])
-def data():
-    return jsonify(battery_voltage=randint(0, 5),
-                   battery_current=randint(15, 30),
-                   battery_temperature=randint(80, 120),
-                   bms_fault=choices([0, 1], weights=[.9, .1])[0],
-                   gps_time=int(time()),
-				   timestamp=int(time()), # seconds since epoch
-                   gps_lat=None,
-                   gps_lon=None,
-                   gps_velocity_east=None,
-                   gps_velocity_north=None,
-                   gps_velocity_up=None,
-                   gps_speed=None,
-                   solar_voltage=randint(0, 5),
-                   solar_current=randint(15, 30),
-                   motor_speed=randint(15, 30))
 
 
 ### Daily #####################################################################
