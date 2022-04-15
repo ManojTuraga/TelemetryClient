@@ -14,14 +14,8 @@
 	"Cell Voltage": {
 		"lines": ["min_cell_voltage", "avg_cell_voltage", "max_cell_voltage"]
 	},
-	"Pack Temperature": {
-		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
-	},
 	"Input Voltage": {
 		"lines": ["input_voltage"]
-	},
-	"Pack Temperature": {
-		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
 	},
 	"Speed": {
 		"lines": ["motor_speed", "gps_speed"]
