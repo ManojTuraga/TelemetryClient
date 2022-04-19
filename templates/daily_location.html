@@ -5,7 +5,6 @@
             // Declare Javascript variables and inject serverside values
 			// Pass list of location pairs for use in js map drawing
             let location_pairs = {{ location_pairs | tojson}};
-			console.log(location_pairs);
 
             // Pass starttime and endtime, needed to set dropdowns on page reload
             let starttime = {{ starttime }};
