@@ -73,15 +73,14 @@ let contexts = canvases.map(x => {
 let charts = {};
 function createGraphs()
 {
-	
+
 	for (let canvas of canvases)
 	{
 		let data_sets = [];
 		let data_key = db_format[canvas.id.split("-")[1]];
-		
+
 		for (let values of data_key)
 		{
-			console.log(values[0], values[1]);
 			data_sets.push({
 					backgroundColor: color(window.chartColors[values[1]["color"]]).alpha(0.5).rgbString(),
 					borderColor: window.chartColors[values[1]["color"]],
@@ -140,13 +139,13 @@ function createGraphs()
 			}
 		});
 		charts[canvas.id.split("-")[1]] = chart;
-		
+
 	}
 }
 createGraphs();
 
 
-initialHide();
+initialHide(); // TODO: remove?
 checkForData();
 setInterval(checkForData, 1000);
 
@@ -164,7 +163,7 @@ function checkForData() {
 				for (let chart_id in charts)
 				{
 					let data_key = db_format[chart_id];
-					
+
 					for (const [i, category] of data_key.entries())
 					{
 						if (category[0] == key)
@@ -197,7 +196,6 @@ x is unix timestamp, y is sensor reading
 function updateChart(chart, datapoint, i) {
 	let data = chart.config.data.datasets[i].data;
 	chart.config.data.datasets[i].label = chart.config.data.datasets[i].name + ' (' + datapoint.y + chart.config.data.datasets[i].unit + ')';
-	console.log(data)
 		// Prevent duplicate datapoints for same time
 		if (data.length < 1 || datapoint.x != data[data.length-1].x) {
 			data.push(datapoint);
@@ -228,6 +226,6 @@ function updateHead(chart) {
 			unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
 		card_header.classList.toggle('bg-danger', unsafe_val);
 		card_header.classList.toggle('text-white', unsafe_val);
-	
+
 	}
 }
