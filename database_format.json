@@ -59,8 +59,8 @@
 		"category": "bms",
 		"name": "Avg Cell Voltage",
 		"unit": " V",
-		"safe_max": 5,
-		"safe_min": 0,
+		"safe_max": 4.2,
+		"safe_min": 2.8,
 		"color": "red"
 	},
 	"max_cell_voltage": {

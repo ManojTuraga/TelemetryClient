@@ -17,12 +17,15 @@ Add the chart to the chart-restoration select.
 Hide the chart.
 Ensure sel is shown; it could have been hidden if no charts were hidden.
  */
+
 function hideChart(id) {
     let opt = document.createElement('option');
     let sel = document.getElementById('add-chart-sel');
     opt.id = 'opt-' + id;
     opt.value = id;
-    opt.innerHTML = db_format[id]['name'];
+	console.log(id + ": ID");
+    opt.innerHTML = id;
+	console.log(db_format[id]);
     sel.appendChild(opt);
     sel.parentNode.style.display = 'block';
     window.localStorage.setItem('opt-' + id, 0);
@@ -65,23 +68,23 @@ function pinChart(id){
 
 }
 
-// Canvases hold contexts. Charts are created by passing a context and a config dict.
-let canvases = Array.from(document.getElementsByClassName("can"));
-let contexts = canvases.map(x => {
-    return x.getContext('2d')
-});
+/*
+Create Charts based on keys in rt_format
+Charts have multiple lines based on each sensor within the category
+*/
+
 let charts = {};
 function createGraphs()
 {
-	
+	// Canvases hold contexts. Charts are created by passing a context and a config dict.
+	let canvases = Array.from(document.getElementsByClassName("can"));
 	for (let canvas of canvases)
 	{
 		let data_sets = [];
 		let data_key = db_format[canvas.id.split("-")[1]];
-		
+
 		for (let values of data_key)
 		{
-			console.log(values[0], values[1]);
 			data_sets.push({
 					backgroundColor: color(window.chartColors[values[1]["color"]]).alpha(0.5).rgbString(),
 					borderColor: window.chartColors[values[1]["color"]],
@@ -89,7 +92,9 @@ function createGraphs()
 					data: [],
 					name: values[1]["name"],
 					label: values[1]["name"],
-					unit: values[1]["unit"]
+					unit: values[1]["unit"],
+					min: values[1]["safe_min"],
+					max: values[1]["safe_max"]
 				});
 		}
 		let chart = new Chart(canvas.getContext('2d'), {
@@ -133,17 +138,41 @@ function createGraphs()
 						ticks: {
 							beginAtZero: true,
 							min: 0,
-							suggestedMax: 10
+							max: 10
 						}
 					}]
 				}
 			}
 		});
 		charts[canvas.id.split("-")[1]] = chart;
-		
+
 	}
 }
+function setChartBounds()
+{
+	for (let chart in charts)
+	{
+		let temp_min = 10000;
+		let temp_max = 0;
+
+		for (const [i, line] of charts[chart].data.datasets.entries())
+		{
+			if (line.max > temp_max)
+			{
+				temp_max = line.max;
+			}
+			if(line.min < temp_min)
+			{
+				temp_min = line.min;
+			}
+		}
+		charts[chart].options.scales.yAxes[0].ticks.max = temp_max;
+		charts[chart].options.scales.yAxes[0].ticks.min = temp_min;
+	}
+
+}
 createGraphs();
+setChartBounds();
 
 
 initialHide();
@@ -155,7 +184,7 @@ setInterval(checkForData, 1000);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("/realtime/data?ts=" + Date.now())
+	fetch("/realtime/dummy?ts=" + Date.now())
 		.then(response => response.json())
 		.then(data => {
 			//data.min_cell_voltage = 3;
@@ -164,7 +193,7 @@ function checkForData() {
 				for (let chart_id in charts)
 				{
 					let data_key = db_format[chart_id];
-					
+
 					for (const [i, category] of data_key.entries())
 					{
 						if (category[0] == key)
@@ -180,11 +209,14 @@ function checkForData() {
 
 
 function initialHide() {
-    for (let chart in charts) {
-        let parsed_id = chart;
-        let show = window.localStorage.getItem('opt-' + parsed_id);
-        if (show == 0) hideChart(parsed_id);
-    }
+    for (let chart_id in charts) {
+		console.log(chart_id);
+        let show = window.localStorage.getItem('opt-' + chart_id);
+        if (show == 0)
+		{
+			hideChart(chart_id);
+		}
+	}
 }
 
 
@@ -197,7 +229,6 @@ x is unix timestamp, y is sensor reading
 function updateChart(chart, datapoint, i) {
 	let data = chart.config.data.datasets[i].data;
 	chart.config.data.datasets[i].label = chart.config.data.datasets[i].name + ' (' + datapoint.y + chart.config.data.datasets[i].unit + ')';
-	console.log(data)
 		// Prevent duplicate datapoints for same time
 		if (data.length < 1 || datapoint.x != data[data.length-1].x) {
 			data.push(datapoint);
@@ -207,27 +238,3 @@ function updateChart(chart, datapoint, i) {
 	//updateHead(chart)
 }
 
-
-/*
-Update text at card head with the latest received value.
-Update head background color to red if the value is dangerous.
-Called from updateChart().
- */
-function updateHead(chart) {
-    let latest_val = chart.config.data.datasets[0].data[chart.config.data.datasets[0].data.length-1].y;
-    let data_key = chart.canvas.id.split("-")[1];
-    let head_key = "head-" + data_key;
-    let header = document.getElementById(head_key);
-    header.innerText = latest_val;
-
-    let card_header = header.parentNode;
-    let unsafe_val = false;
-	for (let i = 0; i < db_format.length; i++)
-	{
-		if (db_format[data_key][i][2]["safe_max"] != null && db_format[data_key][i][2]["safe_min"] != null)
-			unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
-		card_header.classList.toggle('bg-danger', unsafe_val);
-		card_header.classList.toggle('text-white', unsafe_val);
-	
-	}
-}
