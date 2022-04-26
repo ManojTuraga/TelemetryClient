@@ -17,12 +17,15 @@ Add the chart to the chart-restoration select.
 Hide the chart.
 Ensure sel is shown; it could have been hidden if no charts were hidden.
  */
+
 function hideChart(id) {
     let opt = document.createElement('option');
     let sel = document.getElementById('add-chart-sel');
     opt.id = 'opt-' + id;
     opt.value = id;
-    opt.innerHTML = db_format[id]['name'];
+	console.log(id + ": ID");
+    opt.innerHTML = id;
+	console.log(db_format[id]);
     sel.appendChild(opt);
     sel.parentNode.style.display = 'block';
     window.localStorage.setItem('opt-' + id, 0);
@@ -65,19 +68,23 @@ function pinChart(id){
 
 }
 
-// Canvases hold contexts. Charts are created by passing a context and a config dict.
-let canvases = Array.from(document.getElementsByClassName("can"));
-let contexts = canvases.map(x => {
-    return x.getContext('2d')
-});
+/*
+Create Charts based on keys in rt_format
+Charts have multiple lines based on each sensor within the category
+*/
+
 let charts = {};
 function createGraphs()
 {
+	// Canvases hold contexts. Charts are created by passing a context and a config dict.
+	let canvases = Array.from(document.getElementsByClassName("can"));
 
 	for (let canvas of canvases)
 	{
 		let data_sets = [];
 		let data_key = db_format[canvas.id.split("-")[1]];
+		let lowest_min = 1000000;
+		let highest_max = 0;
 
 		for (let values of data_key)
 		{
@@ -88,8 +95,19 @@ function createGraphs()
 					data: [],
 					name: values[1]["name"],
 					label: values[1]["name"],
-					unit: values[1]["unit"]
+					unit: values[1]["unit"],
+					min: values[1]["safe_min"],
+					max: values[1]["safe_max"]
 				});
+			
+			if (values[1]["safe_min"] < lowest_min)
+			{
+				lowest_min = values[1]["safe_min"];
+			}
+			if (values[1]["safe_max"] > highest_max)
+			{
+				highest_max = values[1]["safe_max"];
+			}
 		}
 		let chart = new Chart(canvas.getContext('2d'), {
 			type: 'line',
@@ -131,15 +149,14 @@ function createGraphs()
 						},
 						ticks: {
 							beginAtZero: true,
-							min: 0,
-							suggestedMax: 10
+							min: lowest_min,
+							max: highest_max
 						}
 					}]
 				}
 			}
 		});
 		charts[canvas.id.split("-")[1]] = chart;
-
 	}
 }
 createGraphs();
@@ -179,11 +196,14 @@ function checkForData() {
 
 
 function initialHide() {
-    for (let chart in charts) {
-        let parsed_id = chart;
-        let show = window.localStorage.getItem('opt-' + parsed_id);
-        if (show == 0) hideChart(parsed_id);
-    }
+    for (let chart_id in charts) {
+		console.log(chart_id);
+        let show = window.localStorage.getItem('opt-' + chart_id);
+        if (show == 0)
+		{
+			hideChart(chart_id);
+		}
+	}
 }
 
 

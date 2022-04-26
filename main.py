@@ -10,7 +10,7 @@ from threading import Timer
 from datetime import datetime, timedelta
 from time import time
 
-from random import randint, choices  # For generating test data
+from random import randint, choices, uniform  # For generating test data
 import numpy as np  # For downsampling
 
 import firebase_admin
@@ -210,9 +210,16 @@ def getOrderedCollections(timestampStr):
 def realtime():
     nav_list = NAV_LIST
     nav = "realtime"
+
+    # Create a dictionary to hold data regarding different sensors
     sensor_info = {}
 
-    for category in rt_format.keys():
+    # Create a list of keys from the Realtime Format File
+    rt_keys = list(rt_format.keys())
+
+        
+    # Iterates through the realtime keys and passes info about different sensors to sensor_info
+    for category in rt_keys:
         for sensor_id in rt_format[category]["lines"]:
             if not category in sensor_info.keys():
                 sensor_info[category] = [(sensor_id, db_format[sensor_id])]
@@ -233,7 +240,7 @@ def realtime():
 @app.route('/realtime/dummy', methods=["GET"])
 def dummy_data():
     test_sensors = \
-        {sensor: randint(0, 50) for category in rt_format.keys() for sensor in rt_format[category]["lines"] }
+        {sensor: round(uniform(float(db_format[sensor]["safe_min"]), float(db_format[sensor]["safe_max"])), 4) for category in rt_format.keys() for sensor in rt_format[category]["lines"]}
 
     test_sensors["timestamp"] = int(time())
 
@@ -265,20 +272,12 @@ def daily():
     nav_list = NAV_LIST
     list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
     # Check if valid date was provided as GET parameter, default to today (at midnight) if not
-    #try:
-        #date = datetime.strptime(request.args.get('date', default=""), '%Y-%m-%d')
-    #except ValueError:
-        #date = datetime.combine(datetime.today(), datetime.min.time())
-
     try:
         date = datetime.strptime(request.args.get('date', default=""), '%Y-%m-%d')
     except ValueError or IndexError:
         date = datetime.strptime(list_of_days[-1], '%Y-%m-%d')
 
     # Formatted date strings when rendering page and buttons to other dates
-    #date_str = date.strftime('%Y-%m-%d')
-    #prev_date_str = (date-timedelta(days=1)).strftime('%Y-%m-%d')
-    #next_date_str = (date+timedelta(days=1)).strftime('%Y-%m-%d')
     date_str = date.strftime('%Y-%m-%d')
 
     for day in list_of_days:
@@ -360,7 +359,6 @@ def daily():
         return render_template('daily_location.html', **locals())
     else:
         # Loop through every sensor the current tab should show a reading for
-        #print(client_format[tab]["lines"])
         for sensor_id in client_format[tab]["lines"]:
             # Find the info about the sensor
             if sensor_id not in db_format: continue
@@ -370,26 +368,10 @@ def daily():
             if sensor is not None and "name" in sensor.keys():
                 graph_data[sensor["name"]] = OrderedDict()
 
-                # Loop through all the sensor readings for the day being viewed
-##              db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).stream()
 
 
                 # Creates dictionary with all the data within the specific sensor_id, will be a NoneType of the date_str is not in the database
                 db_data = db.collection(DATABASE_COLLECTION).document(date_str).collection(sensor_id).document("0").get().to_dict()
-                #list_of_days = [day.id for day in db.collection(DATABASE_COLLECTION).stream()]
-
-##                try:
-##                    readings = next(db_data).to_dict()["seconds"] # The map within the sensor's document
-##
-##                    readings
-##                except StopIteration:
-##                    continue  # Skip sensors not in database
-##                except KeyError:
-##                    continue
-
-                # Convert keys from strings to ints and sort (conversion required for sort to be correct)
-
-##              sorted_readings = sorted({int(k) : v for k, v in readings.items()}.items())
 
                 #Tries to sort the entries, checks if there is a NoneType. If so, will assign empty lists to times and readings
                 try:
@@ -403,8 +385,6 @@ def daily():
 
                 except ValueError:
                     times, readings = [], []
-
-                #times, readings = zip(*sorted_readings)
 
                 # Downsample data if needed
                 if len(readings) > MAX_POINTS:

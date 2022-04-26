@@ -1,32 +1,32 @@
 {
-	"Pack Voltage": {
+	"pack_voltage": {
 		"lines": ["pack_voltage"]
 	},
-	"Pack State of Charge": {
+	"pack_state_of_charge": {
 		"lines": ["pack_soc"]
 	},
-	"Pack Current": {
+	"pack_current": {
 		"lines": ["pack_current"]
 	},
-	"Pack Temperature": {
+	"pack_temperature": {
 		"lines": ["min_pack_temp", "avg_pack_temp", "max_pack_temp"]
 	},
-	"Cell Voltage": {
+	"cell_voltage": {
 		"lines": ["min_cell_voltage", "avg_cell_voltage", "max_cell_voltage"]
 	},
-	"Input Voltage": {
+	"input_voltage": {
 		"lines": ["input_voltage"]
 	},
-	"Speed": {
+	"speed": {
 		"lines": ["motor_speed", "gps_speed"]
 	},
-	"Motor Current": {
+	"motor_current": {
 		"lines": ["motor_current"]
 	},
-	"Motor Temperature": {
+	"motor_temperature": {
 		"lines": ["motor_temp"]
 	},
-	"Solar Voltage": {
+	"solar_voltage": {
 		"lines": ["solar_voltage"]
 	}
 	
