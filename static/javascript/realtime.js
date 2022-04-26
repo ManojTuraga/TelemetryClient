@@ -78,6 +78,7 @@ function createGraphs()
 {
 	// Canvases hold contexts. Charts are created by passing a context and a config dict.
 	let canvases = Array.from(document.getElementsByClassName("can"));
+
 	for (let canvas of canvases)
 	{
 		let data_sets = [];
@@ -145,7 +146,6 @@ function createGraphs()
 			}
 		});
 		charts[canvas.id.split("-")[1]] = chart;
-
 	}
 }
 function setChartBounds()
@@ -175,7 +175,7 @@ createGraphs();
 setChartBounds();
 
 
-initialHide();
+initialHide(); // TODO: remove?
 checkForData();
 setInterval(checkForData, 1000);
 
@@ -184,7 +184,7 @@ setInterval(checkForData, 1000);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("/realtime/data?ts=" + Date.now())
+	fetch("/realtime/dummy?ts=" + Date.now())
 		.then(response => response.json())
 		.then(data => {
 			//data.min_cell_voltage = 3;
@@ -238,3 +238,27 @@ function updateChart(chart, datapoint, i) {
 	//updateHead(chart)
 }
 
+
+/*
+Update text at card head with the latest received value.
+Update head background color to red if the value is dangerous.
+Called from updateChart().
+ */
+function updateHead(chart) {
+    let latest_val = chart.config.data.datasets[0].data[chart.config.data.datasets[0].data.length-1].y;
+    let data_key = chart.canvas.id.split("-")[1];
+    let head_key = "head-" + data_key;
+    let header = document.getElementById(head_key);
+    header.innerText = latest_val;
+
+    let card_header = header.parentNode;
+    let unsafe_val = false;
+	for (let i = 0; i < db_format.length; i++)
+	{
+		if (db_format[data_key][i][2]["safe_max"] != null && db_format[data_key][i][2]["safe_min"] != null)
+			unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
+		card_header.classList.toggle('bg-danger', unsafe_val);
+		card_header.classList.toggle('text-white', unsafe_val);
+
+	}
+}
