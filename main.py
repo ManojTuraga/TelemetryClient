@@ -217,10 +217,6 @@ def realtime():
     # Create a list of keys from the Realtime Format File
     rt_keys = list(rt_format.keys())
 
-    # Location causes issues with the way rt_format is set up, so it is removed
-    if "Location" in rt_keys:
-        rt_keys.remove("Location")
-
         
     # Iterates through the realtime keys and passes info about different sensors to sensor_info
     for category in rt_keys:
@@ -243,9 +239,8 @@ def realtime():
 # Get random test data to display on the realtime page
 @app.route('/realtime/dummy', methods=["GET"])
 def dummy_data():
-    categories = [category for category in rt_format.keys() if category != "Location"]
     test_sensors = \
-        {sensor: round(uniform(float(db_format[sensor]["safe_min"]), float(db_format[sensor]["safe_max"])), 4) for category in categories for sensor in rt_format[category]["lines"]}
+        {sensor: round(uniform(float(db_format[sensor]["safe_min"]), float(db_format[sensor]["safe_max"])), 4) for category in rt_format.keys() for sensor in rt_format[category]["lines"]}
 
     test_sensors["timestamp"] = int(time())
 
