@@ -7,6 +7,18 @@ window.chartColors = {
 	purple: 'rgb(153, 102, 255)',
 	grey: 'rgb(201, 203, 207)'
 };
+/*
+Function Title Cases a String
+JavaScript doesn't have a built in function like Python.
+This is used in hideChart() in the innerHTML attribute
+*/
+function titleCase(str) {
+  str = str.toLowerCase().split(' ');
+  for (var i = 0; i < str.length; i++) {
+    str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1); 
+  }
+  return str.join(' ');
+}
 
 const MAX_DATAPOINTS = 40;
 
@@ -24,8 +36,7 @@ function hideChart(id) {
     opt.id = 'opt-' + id;
     opt.value = id;
 	console.log(id + ": ID");
-    opt.innerHTML = id;
-	console.log(db_format[id]);
+    opt.innerHTML = titleCase(id.replaceAll('_', ' '));
     sel.appendChild(opt);
     sel.parentNode.style.display = 'block';
     window.localStorage.setItem('opt-' + id, 0);
