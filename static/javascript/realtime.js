@@ -83,6 +83,8 @@ function createGraphs()
 	{
 		let data_sets = [];
 		let data_key = db_format[canvas.id.split("-")[1]];
+		let lowest_min = 1000000;
+		let highest_max = 0;
 
 		for (let values of data_key)
 		{
@@ -97,6 +99,15 @@ function createGraphs()
 					min: values[1]["safe_min"],
 					max: values[1]["safe_max"]
 				});
+			
+			if (values[1]["safe_min"] < lowest_min)
+			{
+				lowest_min = values[1]["safe_min"];
+			}
+			if (values[1]["safe_max"] > highest_max)
+			{
+				highest_max = values[1]["safe_max"];
+			}
 		}
 		let chart = new Chart(canvas.getContext('2d'), {
 			type: 'line',
@@ -138,8 +149,8 @@ function createGraphs()
 						},
 						ticks: {
 							beginAtZero: true,
-							min: 0,
-							max: 10
+							min: lowest_min,
+							max: highest_max
 						}
 					}]
 				}
@@ -148,31 +159,7 @@ function createGraphs()
 		charts[canvas.id.split("-")[1]] = chart;
 	}
 }
-function setChartBounds()
-{
-	for (let chart in charts)
-	{
-		let temp_min = 10000;
-		let temp_max = 0;
-
-		for (const [i, line] of charts[chart].data.datasets.entries())
-		{
-			if (line.max > temp_max)
-			{
-				temp_max = line.max;
-			}
-			if(line.min < temp_min)
-			{
-				temp_min = line.min;
-			}
-		}
-		charts[chart].options.scales.yAxes[0].ticks.max = temp_max;
-		charts[chart].options.scales.yAxes[0].ticks.min = temp_min;
-	}
-
-}
 createGraphs();
-setChartBounds();
 
 
 initialHide(); // TODO: remove?
