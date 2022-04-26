@@ -68,7 +68,7 @@
                 <div id="card-{{ category }}" class="card m-1">
                     <div class="card-header" data-target="#card-body-wrap-{{ category }}">
                         <p style="float: left; margin: 0" class="btn-link text-reset" onclick="hideChart('{{ category }}')">Hide</p>
-                        {{ category | safe }} 
+                        {{ category.replace('_', ' ').title() | safe }} 
 						            <span id="head-{{ category}}"></span>
                         <p style="float: right; margin: 0" class="btn-link text-reset" onclick="">Pin</p>
                     </div>
