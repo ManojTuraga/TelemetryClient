@@ -62,6 +62,22 @@
 				</div>
 			</div>
 		</div>
+		<div id="container-faults" class="card-container col-12 col-lg-6 m-0 p-1">
+			<div id="card-faults" class="card m-1">
+				<div class="card-header" data-toggle="collapse" data-target="#card-body-wrap-faults">
+					<p style="float: left; margin: 0" class="btn-link text-reset" onclick="hideChart('faults')">Hide</p>
+					Faults: <span id="head-faults"></span>
+					<p style="float: right; margin: 0" class="btn-link text-reset" onclick="">Pin</p>
+				</div>
+
+				<div id="card-body-wrap-faults" class="h-100 collapse show" style="transition: height 0.01s;">
+					<div class="card-body p-0">
+						<div id="faults" style="height: 276px;" class="overflow-auto">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
         {% for category, datatype_list in format.items() %}
             <div id="container-{{ category }}" class="card-container col-12 col-lg-6 m-0 p-1">

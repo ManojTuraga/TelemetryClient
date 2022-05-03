@@ -242,6 +242,9 @@ def dummy_data():
     test_sensors = \
         {sensor: round(uniform(float(db_format[sensor]["safe_min"]), float(db_format[sensor]["safe_max"])), 4) for category in rt_format.keys() for sensor in rt_format[category]["lines"]}
 
+    test_sensors["bms_fault"] = randint(1, 1000000)
+    test_sensors["solar_fault"] = randint(1, 1000000)
+    test_sensors["motor_fault"] = randint(1, 1000000)
     test_sensors["timestamp"] = int(time())
 
     return jsonify(test_sensors), 200

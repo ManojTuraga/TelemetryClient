@@ -182,7 +182,7 @@ setInterval(checkForData, 1000);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("/realtime/data?ts=" + Date.now())
+	fetch("/realtime/dummy?ts=" + Date.now())
 		.then(response => response.json())
 		.then(data => {
 			//data.min_cell_voltage = 3;
@@ -202,6 +202,7 @@ function checkForData() {
 				}
             }
 			updateMap(data); // In realtime_map.js
+			updateFaults(data);
 		});
 }
 
@@ -234,6 +235,123 @@ function updateChart(chart, datapoint, i) {
 		}
 	chart.update();
 	//updateHead(chart)
+}
+let bms_errors = [
+				//https://www.orionbms.com/manuals/utility_o2/bms_param_dtc_status_1.html
+				// DTC #1 Status
+   				"Discharge Limit Enforcement",// Discharge Limit
+    			"Charger Safety Relay", // Charger Relay
+    			"Internal Hardware", // Int Hardware
+    			"Internal Heatsink Thermistor", // Int HS Therm
+    			"Internal Software", // Int Software
+    			"High Cell Voltage Too High", // Max Cell V High"
+    			"Low Cell Voltage Too Low",  // Min Cell V Low"
+    			"Pack Too Hot", // Pack Too Hot # Reserved
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null, 
+				// DTC #2 Status
+				"Internal Communication", // Int Comm
+    			"Cell Balancing Stuck Off", // Cell Balancing
+    			"Weak Cell", // Weak Cell
+    			"Low Cell Voltage", // Low Cell Voltage
+    			"Open Wiring", // Open Wiring
+    			"Current Sensor", // Current Sensor
+    			"Highest Cell Voltage Over 5 Volts", // Max Cell > 5V
+    			"Cell ASIC", // Cell ASIC
+    			"Weak Pack", // Weak Pack
+    			"Fan Monitor", // Fan Monitor
+    			"Thermistor", // Thermistor
+    			"External Communication", // Ext Comm
+    			"Redundant Power Supply", // Redundant PS
+    			"High Voltage Isolation", // High Volt Iso
+    			"Input Power Supply", // Input PS
+    			"Charge Limit Enforcement" // Charge Limit
+			];
+let motor_errors = [
+    			"Motor Angle ID",
+    			"Over Voltage",
+    			"Low Voltage",
+    			null,
+    			"Motor Stall",
+    			"Internal Volts Fault",
+    			"MC Over Temp",
+    			null,
+    			"Internal Reset",
+    			"Hall Throttle Error",
+    			"Angle Sensor Error",
+    			null,
+    			null,
+    			"Motor Over Temp",
+    			"Hall Galv Sensor Error"
+			];
+			
+let solar_errors = [
+				"Battery Volt Level Reached",
+				"Overtemperature",
+				"No Charge",
+				"Undervoltage"
+			]
+/*
+function updates the faults displayed on the faults
+canvas
+{datapoint: int}
+converts to binary and sequentially reads each bit to corresponding error
+*/
+
+function updateFaults(data)
+{
+	
+	let binary_bms = Number(data["bms_fault"]).toString(2);
+	let binary_solar = Number(data["solar_fault"]).toString(2);
+	let binary_motor = Number(data["motor_fault"]).toString(2);
+	
+	document.getElementById("faults").innerText = "BMS: " + binary_bms;
+	document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + binary_solar;
+	document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + binary_motor;
+	document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "---------------------------";
+	
+	if ("bms_fault" in data)
+	{
+			
+		for (let i = bms_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_bms[i] == '1' && bms_errors[i] != null)
+			{
+					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "BMS: " + bms_errors[i];
+			}	
+		}
+		
+	}
+	if ("solar_fault" in data)
+	{
+		for (let i = solar_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_solar[i] == '1' && solar_errors[i] != null)
+			{
+
+					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + solar_errors[i];
+			}	
+		}
+		
+	}
+	if ("motor_fault" in data)
+	{
+		for (let i = motor_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_motor[i] == '1' && motor_errors[i] != null)
+			{
+
+					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + motor_errors[i];
+			}	
+		}
+		
+	}
 }
 
 

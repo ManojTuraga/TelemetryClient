@@ -182,5 +182,21 @@
 		"safe_max": 60,
 		"safe_min": 0,
 		"color": "red"
+	},
+	"solar_fault": {
+		"category": "solar",
+		"name": "Solar Faults",
+		"unit": "",
+		"safe_max": 2000000,
+		"safe_min": 0,
+		"color": "red"
+	},
+	"motor_fault": {
+		"category": "motor",
+		"name": "Motor Faults",
+		"unit": "",
+		"safe_max": 2000000,
+		"safe_min": 0,
+		"color": "red"
 	}
 }
