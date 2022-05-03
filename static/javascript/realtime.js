@@ -182,7 +182,7 @@ setInterval(checkForData, 1000);
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("/realtime/dummy?ts=" + Date.now())
+	fetch("/realtime/data?ts=" + Date.now())
 		.then(response => response.json())
 		.then(data => {
 			//data.min_cell_voltage = 3;
