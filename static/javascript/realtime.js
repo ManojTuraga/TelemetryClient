@@ -203,6 +203,7 @@ function checkForData() {
             }
 			updateMap(data); // In realtime_map.js
 			updateFaults(data);
+			updateHead();
 		});
 }
 
@@ -234,7 +235,6 @@ function updateChart(chart, datapoint, i) {
 			if (data.length > MAX_DATAPOINTS) data.splice(0, 1);
 		}
 	chart.update();
-	//updateHead(chart)
 }
 let bms_errors = [
 				//https://www.orionbms.com/manuals/utility_o2/bms_param_dtc_status_1.html
@@ -360,21 +360,23 @@ Update text at card head with the latest received value.
 Update head background color to red if the value is dangerous.
 Called from updateChart().
  */
-function updateHead(chart) {
-    let latest_val = chart.config.data.datasets[0].data[chart.config.data.datasets[0].data.length-1].y;
-    let data_key = chart.canvas.id.split("-")[1];
-    let head_key = "head-" + data_key;
-    let header = document.getElementById(head_key);
-    header.innerText = latest_val;
-
-    let card_header = header.parentNode;
-    let unsafe_val = false;
-	for (let i = 0; i < db_format.length; i++)
+function updateHead() {
+	for (let chart_id in charts)
 	{
-		if (db_format[data_key][i][2]["safe_max"] != null && db_format[data_key][i][2]["safe_min"] != null)
-			unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
-		card_header.classList.toggle('bg-danger', unsafe_val);
-		card_header.classList.toggle('text-white', unsafe_val);
-
+		for (let dataset of charts[chart_id].data.datasets)
+		{
+			let latest_val = dataset.data[dataset.data.length -1].y
+			let head_key = "head-" + chart_id;
+			let header = document.getElementById(head_key);
+			let card_header = header.parentNode;
+			let unsafe_val = latest_val > charts[chart_id].options.scales.yAxes[0].ticks.max || latest_val < charts[chart_id].options.scales.yAxes[0].ticks.min;
+			card_header.classList.toggle('bg-danger', unsafe_val);
+			card_header.classList.toggle('text-white', unsafe_val);
+			console.log(unsafe_val);
+			if (unsafe_val)
+			{
+				break;
+			}
+		}
 	}
 }
