@@ -240,7 +240,7 @@ def realtime():
 @app.route('/realtime/dummy', methods=["GET"])
 def dummy_data():
     test_sensors = \
-        {sensor: round(uniform(float(db_format[sensor]["safe_min"]*0.8), float(db_format[sensor]["safe_max"]*1.2)))for category in rt_format.keys() for sensor in rt_format[category]["lines"]}
+        {sensor: round(uniform(float(db_format[sensor]["safe_min"]*0.8), float(db_format[sensor]["safe_max"]*1.2)), 4)for category in rt_format.keys() for sensor in rt_format[category]["lines"]}
 
     test_sensors["bms_fault"] = randint(1, 1000000)
     test_sensors["solar_fault"] = randint(1, 1000000)
