@@ -90,7 +90,7 @@
 		"category": "bms",
 		"name": "bms Fault",
 		"unit": "",
-		"safe_max": 2000000000,
+		"safe_max": null,
 		"safe_min": 0
 	},
 	"motor_speed": {
@@ -129,7 +129,7 @@
 		"category": "motor",
 		"name": "Motor Fault",
 		"unit": "",
-		"safe_max": 2000000000,
+		"safe_max": null,
 		"safe_min": 0
 	},
 	"solar_voltage": {
@@ -144,7 +144,7 @@
 		"category": "solar",
 		"name": "Solar Fault",
 		"unit": "",
-		"safe_max": 2000000000,
+		"safe_max": null,
 		"safe_min": 0
 	},
 	"gps_course": {
@@ -180,6 +180,22 @@
 		"name": "Speed of Car",
 		"unit": " mph",
 		"safe_max": 60,
+		"safe_min": 0,
+		"color": "red"
+	},
+	"solar_fault": {
+		"category": "solar",
+		"name": "Solar Faults",
+		"unit": "",
+		"safe_max": 2000000,
+		"safe_min": 0,
+		"color": "red"
+	},
+	"motor_fault": {
+		"category": "motor",
+		"name": "Motor Faults",
+		"unit": "",
+		"safe_max": 2000000,
 		"safe_min": 0,
 		"color": "red"
 	}

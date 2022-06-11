@@ -202,6 +202,8 @@ function checkForData() {
 				}
             }
 			updateMap(data); // In realtime_map.js
+			updateFaults(data);
+			updateHead();
 		});
 }
 
@@ -233,7 +235,123 @@ function updateChart(chart, datapoint, i) {
 			if (data.length > MAX_DATAPOINTS) data.splice(0, 1);
 		}
 	chart.update();
-	//updateHead(chart)
+}
+let bms_errors = [
+				//https://www.orionbms.com/manuals/utility_o2/bms_param_dtc_status_1.html
+				// DTC #1 Status
+   				"Discharge Limit Enforcement",// Discharge Limit
+    			"Charger Safety Relay", // Charger Relay
+    			"Internal Hardware", // Int Hardware
+    			"Internal Heatsink Thermistor", // Int HS Therm
+    			"Internal Software", // Int Software
+    			"High Cell Voltage Too High", // Max Cell V High"
+    			"Low Cell Voltage Too Low",  // Min Cell V Low"
+    			"Pack Too Hot", // Pack Too Hot # Reserved
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null, 
+				// DTC #2 Status
+				"Internal Communication", // Int Comm
+    			"Cell Balancing Stuck Off", // Cell Balancing
+    			"Weak Cell", // Weak Cell
+    			"Low Cell Voltage", // Low Cell Voltage
+    			"Open Wiring", // Open Wiring
+    			"Current Sensor", // Current Sensor
+    			"Highest Cell Voltage Over 5 Volts", // Max Cell > 5V
+    			"Cell ASIC", // Cell ASIC
+    			"Weak Pack", // Weak Pack
+    			"Fan Monitor", // Fan Monitor
+    			"Thermistor", // Thermistor
+    			"External Communication", // Ext Comm
+    			"Redundant Power Supply", // Redundant PS
+    			"High Voltage Isolation", // High Volt Iso
+    			"Input Power Supply", // Input PS
+    			"Charge Limit Enforcement" // Charge Limit
+			];
+let motor_errors = [
+    			"Motor Angle ID",
+    			"Over Voltage",
+    			"Low Voltage",
+    			null,
+    			"Motor Stall",
+    			"Internal Volts Fault",
+    			"MC Over Temp",
+    			null,
+    			"Internal Reset",
+    			"Hall Throttle Error",
+    			"Angle Sensor Error",
+    			null,
+    			null,
+    			"Motor Over Temp",
+    			"Hall Galv Sensor Error"
+			];
+			
+let solar_errors = [
+				"Battery Volt Level Reached",
+				"Overtemperature",
+				"No Charge",
+				"Undervoltage"
+			]
+/*
+function updates the faults displayed on the faults
+canvas
+{datapoint: int}
+converts to binary and sequentially reads each bit to corresponding error
+*/
+
+function updateFaults(data)
+{
+	
+	let binary_bms = Number(data["bms_fault"]).toString(2);
+	let binary_solar = Number(data["solar_fault"]).toString(2);
+	let binary_motor = Number(data["motor_fault"]).toString(2);
+	
+	document.getElementById("faults").innerText = "BMS: " + binary_bms;
+	document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + binary_solar;
+	document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + binary_motor;
+	document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "---------------------------";
+	
+	if ("bms_fault" in data)
+	{
+			
+		for (let i = bms_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_bms[i] == '1' && bms_errors[i] != null)
+			{
+					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "BMS: " + bms_errors[i];
+			}	
+		}
+		
+	}
+	if ("solar_fault" in data)
+	{
+		for (let i = solar_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_solar[i] == '1' && solar_errors[i] != null)
+			{
+
+					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + solar_errors[i];
+			}	
+		}
+		
+	}
+	if ("motor_fault" in data)
+	{
+		for (let i = motor_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_motor[i] == '1' && motor_errors[i] != null)
+			{
+
+					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + motor_errors[i];
+			}	
+		}
+		
+	}
 }
 
 
@@ -242,21 +360,23 @@ Update text at card head with the latest received value.
 Update head background color to red if the value is dangerous.
 Called from updateChart().
  */
-function updateHead(chart) {
-    let latest_val = chart.config.data.datasets[0].data[chart.config.data.datasets[0].data.length-1].y;
-    let data_key = chart.canvas.id.split("-")[1];
-    let head_key = "head-" + data_key;
-    let header = document.getElementById(head_key);
-    header.innerText = latest_val;
-
-    let card_header = header.parentNode;
-    let unsafe_val = false;
-	for (let i = 0; i < db_format.length; i++)
+function updateHead() {
+	for (let chart_id in charts)
 	{
-		if (db_format[data_key][i][2]["safe_max"] != null && db_format[data_key][i][2]["safe_min"] != null)
-			unsafe_val = latest_val > db_format[data_key]["safe_max"] || latest_val < db_format[data_key]["safe_min"];
-		card_header.classList.toggle('bg-danger', unsafe_val);
-		card_header.classList.toggle('text-white', unsafe_val);
-
+		for (let dataset of charts[chart_id].data.datasets)
+		{
+			let latest_val = dataset.data[dataset.data.length -1].y
+			let head_key = "head-" + chart_id;
+			let header = document.getElementById(head_key);
+			let card_header = header.parentNode;
+			let unsafe_val = latest_val > charts[chart_id].options.scales.yAxes[0].ticks.max || latest_val < charts[chart_id].options.scales.yAxes[0].ticks.min;
+			card_header.classList.toggle('bg-danger', unsafe_val);
+			card_header.classList.toggle('text-white', unsafe_val);
+			console.log(unsafe_val);
+			if (unsafe_val)
+			{
+				break;
+			}
+		}
 	}
 }
