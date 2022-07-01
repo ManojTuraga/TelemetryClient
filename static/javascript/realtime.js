@@ -318,39 +318,32 @@ function updateFaults(data)
 	
 	if ("bms_fault" in data)
 	{
-			
-		for (let i = bms_errors.length - 1; i >= 0; i--)
-		{
-			if (binary_bms[i] == '1' && bms_errors[i] != null)
-			{
-					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "BMS: " + bms_errors[i];
-			}	
+		for (let i = 0; i < binary_bms.length; i++) {
+			// Read the bit string right-to-left, since the first error in the fault names list is for the least significant bit
+			if (binary_bms[binary_bms.length-1-i] == "1" && bms_errors[i]) {
+				document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "BMS: " + bms_errors[i];
+			}
 		}
 		
 	}
 	if ("solar_fault" in data)
 	{
-		for (let i = solar_errors.length - 1; i >= 0; i--)
-		{
-			if (binary_solar[i] == '1' && solar_errors[i] != null)
-			{
-
-					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + solar_errors[i];
-			}	
+		for (let i = 0; i < binary_solar.length; i++) {
+			// Read the bit string right-to-left, since the first error in the fault names list is for the least significant bit
+			if (binary_solar[binary_solar.length-1-i] == "1" && solar_errors[i]) {
+				document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + solar_errors[i];
+			}
 		}
 		
 	}
 	if ("motor_fault" in data)
 	{
-		for (let i = motor_errors.length - 1; i >= 0; i--)
-		{
-			if (binary_motor[i] == '1' && motor_errors[i] != null)
-			{
-
-					document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + motor_errors[i];
-			}	
+		for (let i = 0; i < binary_motor.length; i++) {
+			// Read the bit string right-to-left, since the first error in the fault names list is for the least significant bit
+			if (binary_motor[binary_motor.length-1-i] == "1" && motor_errors[i]) {
+				document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + motor_errors[i];
+			}
 		}
-		
 	}
 }
 
