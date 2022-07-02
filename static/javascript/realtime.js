@@ -177,16 +177,24 @@ initialHide(); // TODO: remove?
 checkForData();
 setInterval(checkForData, 1000);
 
-
 /*
 Requests new data and calls updateChart() with it.
  */
 function checkForData() {
-	fetch("/realtime/data?ts=" + Date.now())
-		.then(response => response.json())
-		.then(data => {
+	// ts for cache busting
+	fetch(DATA_URL + "?ts=" + Date.now())
+		.then(response => response.text())
+		.then(rawData => {
+			console.log("Full response @", (new Date()).toString(), "::", rawData);
+			// Find the JSON string within the renpose in case it has other things too (used when accessing DriverHUD data)
+			let leftBracket = rawData.lastIndexOf("{");
+			let rightBracket = rawData.lastIndexOf("}");
+			if (leftBracket == -1 || rightBracket == -1) throw Error("No JSON substring");
+			let jsonStr = rawData.substring(leftBracket, rightBracket+1);
+			let data = JSON.parse(jsonStr);
+			console.log(data);
 			//data.min_cell_voltage = 3;
-			//data.timestamp = Date.now()
+			if (!data.timestamp) data.timestamp = Date.now(); // Should only be needed when accessing DriverHUD data directly
 			for (let key in data) {
 				for (let chart_id in charts)
 				{
@@ -318,9 +326,10 @@ function updateFaults(data)
 	
 	if ("bms_fault" in data)
 	{
-		for (let i = 0; i < binary_bms.length; i++) {
-			// Read the bit string right-to-left, since the first error in the fault names list is for the least significant bit
-			if (binary_bms[binary_bms.length-1-i] == "1" && bms_errors[i]) {
+		for (let i = bms_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_bms[i] == '1' && bms_errors[i] != null)
+			{
 				document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "BMS: " + bms_errors[i];
 			}
 		}
@@ -328,9 +337,10 @@ function updateFaults(data)
 	}
 	if ("solar_fault" in data)
 	{
-		for (let i = 0; i < binary_solar.length; i++) {
-			// Read the bit string right-to-left, since the first error in the fault names list is for the least significant bit
-			if (binary_solar[binary_solar.length-1-i] == "1" && solar_errors[i]) {
+		for (let i = solar_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_solar[i] == '1' && solar_errors[i] != null)
+			{
 				document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Solar: " + solar_errors[i];
 			}
 		}
@@ -338,12 +348,14 @@ function updateFaults(data)
 	}
 	if ("motor_fault" in data)
 	{
-		for (let i = 0; i < binary_motor.length; i++) {
-			// Read the bit string right-to-left, since the first error in the fault names list is for the least significant bit
-			if (binary_motor[binary_motor.length-1-i] == "1" && motor_errors[i]) {
+		for (let i = motor_errors.length - 1; i >= 0; i--)
+		{
+			if (binary_motor[i] == '1' && motor_errors[i] != null)
+			{
 				document.getElementById("faults").innerText = document.getElementById("faults").innerText + '\n' + "Motor: " + motor_errors[i];
 			}
 		}
+		
 	}
 }
 

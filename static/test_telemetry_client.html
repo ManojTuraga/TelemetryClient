@@ -1,0 +1,35 @@
+<script>
+	let data = {"gps_lat":38.945744,"gps_lon":-95.268631,"gps_speed":1.380935};
+	
+	setInterval(() => {
+		let date = (new Date()).toISOString();
+		data["gps_date"] = date.substr(8, 2) + date.substr(5, 2) + date.substr(2, 2);
+		data["gps_time"] = date.substr(11, 2) + date.substr(14, 2) + date.substr(17, 2);
+		
+		data["gps_lat"] -= (Math.random() - 0.5) / 1000;
+		data["gps_lon"] -= (Math.random() - 0.5) / 1000;
+		
+		// Round to 6 decimal places
+		data["gps_lat"] = parseFloat(data["gps_lat"].toFixed(6));
+		data["gps_lon"] = parseFloat(data["gps_lon"].toFixed(6));
+		
+		data["gps_speed"] = parseFloat((Math.random() * 45).toFixed(6));
+		data["battery_voltage"] = parseFloat((Math.random()*1.4+2.8).toFixed(2));
+		
+		document.write(JSON.stringify(data));
+	
+		fetch(
+			//"http://ku-solar-car-b87af.appspot.com/car", 
+			"http://127.0.0.1:5000/car", 
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"Authentication": "LIpOYlTISfrgvianaqMWiFtCqRvcFPwy", // TODO: Not hard-code here
+				}, 
+				body: JSON.stringify(data),
+			}
+		).then(response => console.log(response));
+		document.write("<br>");
+	}, 2000)
+</script>
