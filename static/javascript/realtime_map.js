@@ -16,7 +16,7 @@ let baseLayers = {};
 for (let mapStyle of MAP_STYLES) {
 	baseLayers[mapStyle] = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
-		maxZoom: 18,
+		maxZoom: 20,
 		id: mapStyle,
 		tileSize: 512,
 		zoomOffset: -1,
@@ -33,8 +33,8 @@ let coords = [];
 
 function updateMap(data) {
 	if ("gps_lat" in data && "gps_lon" in data) {
-		if (coords.length >= 1 && coords[coords.length-1][3] == data["gps_dt"]) return;
-		coords.push([data["gps_lat"], data["gps_lon"], data["gps_speed"], data["gps_dt"]]);
+		if (coords.length >= 1 && coords[coords.length-1][3] == data["gps_time"]) return;
+		coords.push([data["gps_lat"], data["gps_lon"], data["gps_speed"], data["gps_time"]]);
 		if (coords.length > MAX_DATAPOINTS) coords.splice(0, 1);
 
 		path.clearLayers();
