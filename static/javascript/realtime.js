@@ -177,6 +177,7 @@ initialHide(); // TODO: remove?
 checkForData();
 setInterval(checkForData, 1000);
 
+let prevRawData = "old";
 /*
 Requests new data and calls updateChart() with it.
  */
@@ -185,6 +186,12 @@ function checkForData() {
 	fetch(DATA_URL + "?ts=" + Date.now())
 		.then(response => response.text())
 		.then(rawData => {
+			if (rawData == prevRawData && rawData.includes("cache")) {
+				console.log("Ignoring duplicate data");
+				return;
+			}
+			prevRawData = rawData;
+			
 			console.log("Full response @", (new Date()).toString(), "::", rawData);
 			// Find the JSON string within the renpose in case it has other things too (used when accessing DriverHUD data)
 			let leftBracket = rawData.lastIndexOf("{");
@@ -193,8 +200,11 @@ function checkForData() {
 			let jsonStr = rawData.substring(leftBracket, rightBracket+1);
 			let data = JSON.parse(jsonStr);
 			console.log(data);
+			document.getElementById("raw-data").innerText = jsonStr.replaceAll(",", ", ");
+			document.getElementById("raw-data-all").value += '"' + Date.now() + '": '
+				+ document.getElementById("raw-data").innerText + ",\n";
 			//data.min_cell_voltage = 3;
-			if (!data.timestamp) data.timestamp = Date.now(); // Should only be needed when accessing DriverHUD data directly
+			if (!data.timestamp) data.timestamp = Date.now()/1000; // Should only be needed when accessing DriverHUD data directly
 			for (let key in data) {
 				for (let chart_id in charts)
 				{
@@ -370,14 +380,14 @@ function updateHead() {
 	{
 		for (let dataset of charts[chart_id].data.datasets)
 		{
-			let latest_val = dataset.data[dataset.data.length -1].y
+			let latest_val = dataset.data[dataset.data.length-1]?.y
 			let head_key = "head-" + chart_id;
 			let header = document.getElementById(head_key);
 			let card_header = header.parentNode;
 			let unsafe_val = latest_val > charts[chart_id].options.scales.yAxes[0].ticks.max || latest_val < charts[chart_id].options.scales.yAxes[0].ticks.min;
 			card_header.classList.toggle('bg-danger', unsafe_val);
 			card_header.classList.toggle('text-white', unsafe_val);
-			console.log(unsafe_val);
+			//console.log(unsafe_val);
 			if (unsafe_val)
 			{
 				break;
