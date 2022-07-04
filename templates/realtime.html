@@ -2,12 +2,14 @@
 {% block head %}
 	{{ super() }}
 	<!-- https://leafletjs.com/examples/quick-start/ -->
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+	<!--<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
 		integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
 		crossorigin=""/>
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
 		integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-		crossorigin=""></script>
+		crossorigin=""></script>-->
+	<link rel="stylesheet" href="../static/css/lib/leaflet.css" />
+	<script src="../static/javascript/lib/leaflet.js"></script>
 		
 	<style>
 		#map-follow-label {
@@ -99,10 +101,19 @@
 
     </div>
     </div>
-
+	
+	<div id="raw-data" style="font-family: monospace; background: rgba(255, 255, 255, 0.8); position: fixed; top: 0; left: 0; width: 100%;"></div>
+	<div class="container-fluid"><div class="row"><div class="col">
+		<h1>Raw data log</h1>
+		<textarea id="raw-data-all" style="width: 100%; height: 150px; white-space: pre; overflow-wrap: normal; overflow-x: scroll;"></textarea>
+	</div></div></div>
     <script>
         let db_format = {{ format | tojson }};
 		const MAPBOX_KEY = "{{mapbox_key}}";
+		let DATA_URL = "/realtime/data";
+		// Test URLs
+		//DATA_URL = "http://169.254.61.66:5000/get-cached-data";
+		//DATA_URL = "http://127.0.0.1:5000/get-dummy-data";
     </script>
     <script src="{{ url_for('static', filename='javascript/realtime.js') }}"></script>
 
