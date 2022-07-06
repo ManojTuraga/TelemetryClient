@@ -380,7 +380,7 @@ function updateHead() {
 	{
 		for (let dataset of charts[chart_id].data.datasets)
 		{
-			let latest_val = dataset.data[dataset.data.length-1]?.y
+			let latest_val = dataset.data[dataset.data.length-1]?.y;
 			let head_key = "head-" + chart_id;
 			let header = document.getElementById(head_key);
 			let card_header = header.parentNode;
